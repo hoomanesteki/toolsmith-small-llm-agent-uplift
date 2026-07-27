@@ -233,3 +233,4 @@ node_modules/
 # committed instead. See src/toolsmith/tasks/store.py.
 data/tasks/tasks.jsonl
 eval/results/manifest.json
+docs/.quarto/

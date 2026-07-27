@@ -1,0 +1,86 @@
+---
+title: "System card"
+subtitle: "What this system is, what it is for, and where it should not be used."
+---
+
+## What it is
+
+A control plane for routing agent roles across models, plus the harness that
+certifies the routing. It is **not** an agent product and not a model. The
+deliverable is the evidence pipeline: worlds with executable ground truth, a
+task suite with oracle programs, a five-gate runtime, and a statistics layer
+that turns runs into defensible comparisons.
+
+## Intended use
+
+- Deciding which model to put on which agent role, with measured evidence rather
+  than intuition.
+- Regression-testing an agent pipeline when a model, prompt or threshold changes.
+- Demonstrating guardrail behaviour, particularly indirect prompt injection
+  resistance and server-side authorisation of privileged actions.
+- As a teaching artifact for how to evaluate agents without letting a model
+  grade its own homework.
+
+## Out of scope
+
+- **It is not a benchmark of the models named in it.** The published numbers come
+  from a behavioural simulator seeded from model-card priors, not from live API
+  calls. They order configurations, not vendors.
+- **It is not a safety evaluation of any model.** The trap tier measures how a
+  *configuration* behaves inside this harness, on synthetic domains.
+- **It is not calibrated against human judgement yet.** No human labels exist in
+  this repository, so the behaviour classifier and the judge panel are
+  uncalibrated and every judged number is provisional. This is stated wherever
+  such a number appears.
+
+## The models it evaluates
+
+{{< include ../_generated/models.md >}}
+
+Rows marked `**unverified**` have estimated prices. They are flagged everywhere
+they appear and `toolsmith probe models` checks them against live catalogues.
+
+## Licence position
+
+Anthropic, OpenAI and Google models are **inference-only** in this project.
+Their terms bar using outputs to train competing models (Anthropic's is the
+strictest, with no competing-use qualifier at all), so they appear in the
+evaluation matrix and as escalation targets and never in a training file. This
+is enforced by a CI gate, not by intention.
+
+Models whose outputs may legally become training data, if this project ever
+trains anything: the Groq-hosted open-weight models, Mistral, Together, and any
+self-hosted Apache-2.0 or MIT weights.
+
+## Known limitations
+
+1. **Simulated provenance.** The largest limitation, stated on every page. The
+   code path is production; the behaviour is sampled from published priors.
+2. **Synthetic domains.** Three worlds, generated. The transfer world exists to
+   probe generalisation and reports a real drop, but all three are synthetic.
+3. **Short trajectories.** These tasks take about 2.4 turns. Several findings in
+   the literature assume six or more, and at least one of them (the executor's
+   73% share of spend) does not hold at this length. Reported, not smoothed.
+4. **Lexical grounding checks.** Claim support is checked by verifying that
+   every identifier, date and number in an answer appears in an observed tool
+   result. That catches the failure mode that matters in this domain and is not
+   natural language inference. A real NLI model belongs there; the interface is
+   narrow enough to drop one in.
+5. **Uncalibrated judges.** See above.
+
+## Safety behaviour
+
+The system refuses privileged actions server-side, after the model has asked and
+before anything changes. It marks tool results as data before they re-enter
+context. It records every injection it detects whether or not the detection
+changes the outcome. It measures over-refusal alongside abstention, because a
+system that abstains on everything scores perfectly on the latter.
+
+If this were fine-tuned, the adapter would be gated on a refusal-retention suite
+and an over-refusal suite run before and after, with both published and the
+adapter withheld if refusal fell more than five points. That gate is implemented
+in `optimize/track_d_lora.py` rather than described.
+
+## Contact
+
+Issues and questions: the repository's issue tracker.

@@ -1,0 +1,19 @@
+| Key | Provider | Tier | $ in/M | $ out/M | Cache | Training use | Verified |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| `claude-haiku-4-5` | anthropic | mid | 1.000 | 5.000 | 90% | forbidden | 2026-07-26 |
+| `claude-opus-5` | anthropic | frontier | 5.000 | 25.000 | 90% | forbidden | 2026-07-26 |
+| `claude-sonnet-5` | anthropic | frontier | 2.000 | 10.000 | 90% | forbidden | 2026-07-26 |
+| `coinflip` | simulated | local | 0.000 | 0.000 | 0% | allowed | 2026-07-26 |
+| `gemini-20-flash` | google | cheap | 0.075 | 0.300 | 90% | forbidden | 2026-07-26 |
+| `gemini-31-pro` | google | frontier | 2.000 | 12.000 | 90% | forbidden | 2026-07-26 |
+| `gpt-54-mini` | openai | mid | 0.600 | 2.400 | 90% | forbidden | **unverified** |
+| `gpt-54-nano` | openai | cheap | 0.200 | 1.250 | 90% | forbidden | 2026-07-26 |
+| `gpt-56-sol` | openai | frontier | 2.500 | 15.000 | 90% | forbidden | 2026-07-26 |
+| `groq-oss-120b` | groq | mid | 0.150 | 0.600 | 50% | allowed | 2026-07-26 |
+| `groq-oss-20b` | groq | cheap | 0.075 | 0.300 | 50% | allowed | 2026-07-26 |
+| `groq-prompt-guard-86m` | groq | guard | 0.000 | 0.000 | 0% | allowed | 2026-07-26 |
+| `groq-qwen36-27b` | groq | mid | 0.600 | 3.000 | 0% | allowed | 2026-07-26 |
+| `groq-safeguard-20b` | groq | guard | 0.075 | 0.300 | 50% | allowed | 2026-07-26 |
+| `local-mlx-qwen-4b` | mlx | local | 0.000 | 0.000 | 0% | allowed | 2026-07-26 |
+| `mistral-medium` | mistral | mid | 0.400 | 2.000 | 0% | allowed | **unverified** |
+| `oracle` | simulated | local | 0.000 | 0.000 | 0% | allowed | 2026-07-26 |

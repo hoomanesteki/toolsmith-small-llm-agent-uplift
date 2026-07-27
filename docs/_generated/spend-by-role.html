@@ -1,0 +1,106 @@
+<div class="chart-legend" style="display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:.6rem;font-size:.8125rem"><span style="display:inline-flex;align-items:center;gap:.35rem;color:var(--ink-secondary)"><i style="width:10px;height:10px;border-radius:3px;background:var(--series-1);display:inline-block"></i>planner</span><span style="display:inline-flex;align-items:center;gap:.35rem;color:var(--ink-secondary)"><i style="width:10px;height:10px;border-radius:3px;background:var(--series-2);display:inline-block"></i>executor</span><span style="display:inline-flex;align-items:center;gap:.35rem;color:var(--ink-secondary)"><i style="width:10px;height:10px;border-radius:3px;background:var(--series-3);display:inline-block"></i>reviewer</span><span style="display:inline-flex;align-items:center;gap:.35rem;color:var(--ink-secondary)"><i style="width:10px;height:10px;border-radius:3px;background:var(--series-4);display:inline-block"></i>escalation</span></div><figure class="chart">
+<svg viewBox="0 0 780 546" role="img" aria-label="Composition" style="width:100%;height:auto;overflow:visible">
+<line x1="230.0" y1="6.0" x2="230.0" y2="516.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="230.0" y="534.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">0%</text>
+<line x1="361.5" y1="6.0" x2="361.5" y2="516.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="361.5" y="534.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">25%</text>
+<line x1="493.0" y1="6.0" x2="493.0" y2="516.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="493.0" y="534.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">50%</text>
+<line x1="624.5" y1="6.0" x2="624.5" y2="516.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="624.5" y="534.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">75%</text>
+<line x1="756.0" y1="6.0" x2="756.0" y2="516.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="756.0" y="534.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">100%</text>
+<text x="218.0" y="22.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Ablation: no compaction</text>
+<rect x="230.0" y="9.0" width="251.4" height="18" rx="3" fill="var(--series-1)"><title>planner: 48.2%</title></rect>
+<text x="355.7" y="22.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">48%</text>
+<rect x="483.4" y="9.0" width="154.7" height="18" rx="3" fill="var(--series-2)"><title>executor: 29.8%</title></rect>
+<text x="560.7" y="22.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">30%</text>
+<rect x="640.1" y="9.0" width="4.6" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 1.3%</title></rect>
+<rect x="646.7" y="9.0" width="107.3" height="18" rx="3" fill="var(--series-4)"><title>escalation: 20.8%</title></rect>
+<text x="700.4" y="22.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">21%</text>
+<text x="218.0" y="56.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Ablation: no escalation</text>
+<rect x="230.0" y="43.0" width="317.8" height="18" rx="3" fill="var(--series-1)"><title>planner: 60.8%</title></rect>
+<text x="388.9" y="56.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">61%</text>
+<rect x="549.8" y="43.0" width="195.9" height="18" rx="3" fill="var(--series-2)"><title>executor: 37.6%</title></rect>
+<text x="647.7" y="56.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">38%</text>
+<rect x="747.7" y="43.0" width="6.4" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 1.6%</title></rect>
+<text x="218.0" y="90.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Ablation: all tools in prompt</text>
+<rect x="230.0" y="77.0" width="191.2" height="18" rx="3" fill="var(--series-1)"><title>planner: 36.7%</title></rect>
+<text x="325.6" y="90.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">37%</text>
+<rect x="423.2" y="77.0" width="189.1" height="18" rx="3" fill="var(--series-2)"><title>executor: 36.3%</title></rect>
+<text x="517.7" y="90.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">36%</text>
+<rect x="614.3" y="77.0" width="3.0" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 1.0%</title></rect>
+<rect x="619.3" y="77.0" width="134.7" height="18" rx="3" fill="var(--series-4)"><title>escalation: 26.0%</title></rect>
+<text x="686.7" y="90.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">26%</text>
+<text x="218.0" y="124.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Ablation: executor reviews itse...</text>
+<rect x="230.0" y="111.0" width="248.1" height="18" rx="3" fill="var(--series-1)"><title>planner: 47.5%</title></rect>
+<text x="354.1" y="124.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">48%</text>
+<rect x="480.1" y="111.0" width="152.7" height="18" rx="3" fill="var(--series-2)"><title>executor: 29.4%</title></rect>
+<text x="556.5" y="124.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">29%</text>
+<rect x="634.9" y="111.0" width="28.4" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 5.8%</title></rect>
+<rect x="665.2" y="111.0" width="88.8" height="18" rx="3" fill="var(--series-4)"><title>escalation: 17.3%</title></rect>
+<text x="709.6" y="124.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">17%</text>
+<text x="218.0" y="158.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">All cheap (gpt-oss-20b)</text>
+<rect x="230.0" y="145.0" width="77.3" height="18" rx="3" fill="var(--series-1)"><title>planner: 15.1%</title></rect>
+<text x="268.7" y="158.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">15%</text>
+<rect x="309.3" y="145.0" width="363.0" height="18" rx="3" fill="var(--series-2)"><title>executor: 69.4%</title></rect>
+<text x="490.8" y="158.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">69%</text>
+<rect x="674.3" y="145.0" width="79.7" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 15.5%</title></rect>
+<text x="714.2" y="158.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">16%</text>
+<text x="218.0" y="192.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Cascade (fully open weights)</text>
+<rect x="230.0" y="179.0" width="18.2" height="18" rx="3" fill="var(--series-1)"><title>planner: 3.8%</title></rect>
+<rect x="250.2" y="179.0" width="481.0" height="18" rx="3" fill="var(--series-2)"><title>executor: 91.8%</title></rect>
+<text x="490.7" y="192.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">92%</text>
+<rect x="733.2" y="179.0" width="8.1" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 1.9%</title></rect>
+<rect x="743.3" y="179.0" width="10.6" height="18" rx="3" fill="var(--series-4)"><title>escalation: 2.4%</title></rect>
+<text x="218.0" y="226.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Cascade (Qwen executor, OSS ver...</text>
+<rect x="230.0" y="213.0" width="251.4" height="18" rx="3" fill="var(--series-1)"><title>planner: 48.2%</title></rect>
+<text x="355.7" y="226.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">48%</text>
+<rect x="483.4" y="213.0" width="154.7" height="18" rx="3" fill="var(--series-2)"><title>executor: 29.8%</title></rect>
+<text x="560.7" y="226.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">30%</text>
+<rect x="640.1" y="213.0" width="4.6" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 1.3%</title></rect>
+<rect x="646.7" y="213.0" width="107.3" height="18" rx="3" fill="var(--series-4)"><title>escalation: 20.8%</title></rect>
+<text x="700.4" y="226.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">21%</text>
+<text x="218.0" y="260.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Cascade (frontier verifier)</text>
+<rect x="230.0" y="247.0" width="165.4" height="18" rx="3" fill="var(--series-1)"><title>planner: 31.8%</title></rect>
+<text x="312.7" y="260.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">32%</text>
+<rect x="397.4" y="247.0" width="101.6" height="18" rx="3" fill="var(--series-2)"><title>executor: 19.7%</title></rect>
+<text x="448.2" y="260.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">20%</text>
+<rect x="501.0" y="247.0" width="159.8" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 30.8%</title></rect>
+<text x="580.9" y="260.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">31%</text>
+<rect x="662.8" y="247.0" width="91.2" height="18" rx="3" fill="var(--series-4)"><title>escalation: 17.7%</title></rect>
+<text x="708.4" y="260.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">18%</text>
+<text x="218.0" y="294.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Cascade (gpt-5.4-mini executor)</text>
+<rect x="230.0" y="281.0" width="313.5" height="18" rx="3" fill="var(--series-1)"><title>planner: 60.0%</title></rect>
+<text x="386.8" y="294.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">60%</text>
+<rect x="545.5" y="281.0" width="130.0" height="18" rx="3" fill="var(--series-2)"><title>executor: 25.1%</title></rect>
+<text x="610.6" y="294.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">25%</text>
+<rect x="677.6" y="281.0" width="6.3" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 1.6%</title></rect>
+<rect x="685.8" y="281.0" width="68.2" height="18" rx="3" fill="var(--series-4)"><title>escalation: 13.3%</title></rect>
+<text x="719.9" y="294.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">13%</text>
+<text x="218.0" y="328.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">All frontier (Opus 5)</text>
+<rect x="230.0" y="315.0" width="86.7" height="18" rx="3" fill="var(--series-1)"><title>planner: 16.9%</title></rect>
+<text x="273.3" y="328.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">17%</text>
+<rect x="318.7" y="315.0" width="349.6" height="18" rx="3" fill="var(--series-2)"><title>executor: 66.8%</title></rect>
+<text x="493.5" y="328.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">67%</text>
+<rect x="670.3" y="315.0" width="83.7" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 16.3%</title></rect>
+<text x="712.2" y="328.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">16%</text>
+<text x="218.0" y="362.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Local only (Qwen3.5-4B, 4-bit)</text>
+<text x="218.0" y="396.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Naive role split (frontier book...</text>
+<rect x="230.0" y="383.0" width="250.1" height="18" rx="3" fill="var(--series-1)"><title>planner: 47.9%</title></rect>
+<text x="355.1" y="396.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">48%</text>
+<rect x="482.1" y="383.0" width="27.9" height="18" rx="3" fill="var(--series-2)"><title>executor: 5.7%</title></rect>
+<rect x="512.0" y="383.0" width="242.0" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 46.4%</title></rect>
+<text x="633.0" y="396.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">46%</text>
+<text x="218.0" y="430.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Oracle (ceiling)</text>
+<text x="218.0" y="464.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Coin flip (floor)</text>
+<text x="218.0" y="498.0" text-anchor="end" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Single model (Sonnet 5)</text>
+<rect x="230.0" y="485.0" width="86.6" height="18" rx="3" fill="var(--series-1)"><title>planner: 16.8%</title></rect>
+<text x="273.3" y="498.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">17%</text>
+<rect x="318.6" y="485.0" width="350.9" height="18" rx="3" fill="var(--series-2)"><title>executor: 67.1%</title></rect>
+<text x="494.0" y="498.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">67%</text>
+<rect x="671.5" y="485.0" width="82.5" height="18" rx="3" fill="var(--series-3)"><title>reviewer: 16.1%</title></rect>
+<text x="712.7" y="498.0" text-anchor="middle" fill="var(--chart-surface)" font-size="10" font-weight="620" font-family="system-ui,-apple-system,sans-serif">16%</text>
+</svg>
+<figcaption>Share of each configuration's spend. The source spec predicted the executor at 73% and the planner at 9% on a six-turn loop; at the 2.4 turns these tasks actually take, the planner's single frontier call dominates instead.</figcaption>
+</figure>

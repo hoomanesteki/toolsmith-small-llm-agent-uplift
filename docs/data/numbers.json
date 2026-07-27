@@ -1,0 +1,144 @@
+{
+  "best": {
+    "ci_high": 0.983333,
+    "ci_low": 0.922222,
+    "escalation_rate": 0.13333333333333333,
+    "label": "Cascade (gpt-5.4-mini executor)",
+    "pass_at_1": 0.955556,
+    "pass_hat_k": 0.8666666666666667,
+    "pipeline": "cascade_mini_executor",
+    "spend_by_role": {
+      "escalation": 0.1334,
+      "executor": 0.251,
+      "planner": 0.5999,
+      "reviewer": 0.0157
+    },
+    "usd_per_success": 0.014644568895348837,
+    "usd_per_task": 0.013993699166666667
+  },
+  "best_vs_reference": 0.27936649440082556,
+  "cap_usd": 20.0,
+  "cascade": {
+    "ci_high": 0.927778,
+    "ci_low": 0.833333,
+    "escalation_rate": 0.2388888888888889,
+    "label": "Cascade (Qwen executor, OSS verifier)",
+    "pass_at_1": 0.883333,
+    "pass_hat_k": 0.7444444444444445,
+    "pipeline": "cascade_default",
+    "spend_by_role": {
+      "escalation": 0.2078,
+      "executor": 0.298,
+      "planner": 0.4817,
+      "reviewer": 0.0126
+    },
+    "usd_per_success": 0.019730159433962266,
+    "usd_per_task": 0.0174283075
+  },
+  "cheapest": {
+    "ci_high": 0.694444,
+    "ci_low": 0.55,
+    "escalation_rate": 0.0,
+    "label": "All cheap (gpt-oss-20b)",
+    "pass_at_1": 0.622222,
+    "pass_hat_k": 0.26666666666666666,
+    "pipeline": "budget_floor_oss20b",
+    "spend_by_role": {
+      "executor": 0.6939,
+      "planner": 0.1508,
+      "reviewer": 0.1553
+    },
+    "usd_per_success": 0.0011262542857142857,
+    "usd_per_task": 0.0007007804444444445
+  },
+  "cheapest_vs_reference": 0.02148494188202671,
+  "comparisons_significant": 70,
+  "comparisons_total": 105,
+  "escalation_gain": 0.18333300000000008,
+  "generated_on": "2026-07-27",
+  "hidden_split": "d2f4c2ed77bd584ac19a99f34c5c95b81428349290ef5401d2ef482ad67bfe34",
+  "injections": 375,
+  "input_share": 0.8234596666666667,
+  "live_usd": 0.0,
+  "n_configs": 15,
+  "n_runs": 8100,
+  "n_tasks": 180,
+  "naive": {
+    "ci_high": 0.705556,
+    "ci_low": 0.566667,
+    "escalation_rate": 0.0,
+    "label": "Naive role split (frontier bookends)",
+    "pass_at_1": 0.638889,
+    "pass_hat_k": 0.3111111111111111,
+    "pipeline": "naive_role_split",
+    "spend_by_role": {
+      "executor": 0.0569,
+      "planner": 0.4793,
+      "reviewer": 0.4638
+    },
+    "usd_per_success": 0.027411784086956523,
+    "usd_per_task": 0.017513084277777778
+  },
+  "no_escalation": {
+    "ci_high": 0.766667,
+    "ci_low": 0.633333,
+    "escalation_rate": 0.0,
+    "label": "Ablation: no escalation",
+    "pass_at_1": 0.7,
+    "pass_hat_k": 0.40555555555555556,
+    "pipeline": "ablation_no_escalation",
+    "spend_by_role": {
+      "executor": 0.3762,
+      "planner": 0.608,
+      "reviewer": 0.0159
+    },
+    "usd_per_success": 0.019725078174603176,
+    "usd_per_task": 0.013807554722222223
+  },
+  "provenance": "simulated",
+  "provenance_note": "PROVENANCE: simulated. Every number here was produced by the production code path over a deterministic behavioural simulator seeded from published model-card priors. No API call was made and nothing was spent. Run with --provider live to regenerate these tables against real models.",
+  "reference": {
+    "ci_high": 0.977778,
+    "ci_low": 0.916667,
+    "escalation_rate": 0.0,
+    "label": "All frontier (Opus 5)",
+    "pass_at_1": 0.95,
+    "pass_hat_k": 0.85,
+    "pipeline": "frontier_all_opus",
+    "spend_by_role": {
+      "executor": 0.6685,
+      "planner": 0.1686,
+      "reviewer": 0.163
+    },
+    "usd_per_success": 0.05242063450292398,
+    "usd_per_task": 0.04979960277777778
+  },
+  "seed": 20260726,
+  "simulated_usd": 852.159795,
+  "suite_total": 7756,
+  "tracks": {
+    "track_a_prompts": {
+      "headline": "Prompt compilation cannot be scored under the simulator: it samples behaviour from published model priors and never reads the prompt. What is measurable is the token cost, which ranges 81 to 237 tokens per turn, a 54% spread paid on every turn of every task.",
+      "verdict": "unmeasurable"
+    },
+    "track_b_router": {
+      "headline": "On a cost-per-success objective the optimal threshold is tau=0.00: escalation does not pay for itself, because the verifier fires often enough that the retries cost more than the successes they buy. It does buy quality if you want it: tau=1.00 reaches 96.7% pass@1, 2.5% above never escalating, for 57% more per success. Which of those is right is a product decision, and the point of this track is that it is now priced.",
+      "verdict": "null"
+    },
+    "track_c_context": {
+      "headline": "Retrieving tool schemas instead of inlining them cuts input tokens by 48% per task and costs 0.0% of pass@1, for a 23% reduction in dollars per success.",
+      "verdict": "gain"
+    },
+    "track_d_lora": {
+      "headline": "Not run, and the reasoning is the result. Routing and context engineering already deliver 88 to 96% of frontier pass@1 at 0.13 to 0.38 times the cost per success without training anything, the residual gap is in abstention judgement rather than tool-calling syntax, and the recurring cost of SERVING an adapter exceeds the entire project budget while the training run itself costs a few dollars.",
+      "verdict": "null"
+    }
+  },
+  "traps": 1280,
+  "trials": 3,
+  "world_digests": {
+    "clinic": "1f234948dc032b84a924ffd0221ba42f80476405ef5ffc787317ee8a37effcb5",
+    "doc": "5d43989cc9e85a2a9210e778893fae400783d0d33b7cb52918e72d0189852c31",
+    "ops": "61e4f223b63a00ebe2177b05792eaa911f24c31c320936528708a1738d14367c"
+  }
+}

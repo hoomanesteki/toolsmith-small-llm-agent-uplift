@@ -1,0 +1,88 @@
+<div class="chart-legend" style="display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:.6rem;font-size:.8125rem"><span style="display:inline-flex;align-items:center;gap:.35rem;color:var(--ink-secondary)"><i style="width:10px;height:10px;border-radius:3px;background:var(--series-3);display:inline-block"></i>On the Pareto frontier</span><span style="display:inline-flex;align-items:center;gap:.35rem;color:var(--ink-secondary)"><i style="width:10px;height:10px;border-radius:3px;background:var(--series-1);display:inline-block"></i>Dominated</span></div><figure class="chart">
+<svg viewBox="0 0 780 420" role="img" aria-label="Cost per success against pass@1" style="width:100%;height:auto;overflow:visible">
+<line x1="66.0" y1="364.0" x2="750.0" y2="364.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="56.0" y="368.0" text-anchor="end" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">54%</text>
+<line x1="66.0" y1="295.2" x2="750.0" y2="295.2" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="56.0" y="299.2" text-anchor="end" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">64%</text>
+<line x1="66.0" y1="226.4" x2="750.0" y2="226.4" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="56.0" y="230.4" text-anchor="end" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">73%</text>
+<line x1="66.0" y1="157.6" x2="750.0" y2="157.6" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="56.0" y="161.6" text-anchor="end" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">83%</text>
+<line x1="66.0" y1="88.8" x2="750.0" y2="88.8" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="56.0" y="92.8" text-anchor="end" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">92%</text>
+<line x1="66.0" y1="20.0" x2="750.0" y2="20.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="56.0" y="24.0" text-anchor="end" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">102%</text>
+<line x1="90.5" y1="20.0" x2="90.5" y2="364.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="90.5" y="382.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">$0.001</text>
+<line x1="449.0" y1="20.0" x2="449.0" y2="364.0" stroke="var(--chart-grid)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="449.0" y="382.0" text-anchor="middle" fill="var(--chart-muted)" font-size="11" font-weight="400" font-family="system-ui,-apple-system,sans-serif">$0.01</text>
+<line x1="66.0" y1="364.0" x2="750.0" y2="364.0" stroke="var(--chart-axis)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<line x1="66.0" y1="20.0" x2="66.0" y2="364.0" stroke="var(--chart-axis)" stroke-width="1" stroke-linecap="round" opacity="1"/>
+<text x="423.0" y="408.0" text-anchor="middle" fill="var(--chart-ink-2)" font-size="12" font-weight="400" font-family="system-ui,-apple-system,sans-serif">Dollars per SUCCESS (log scale), lower is better</text>
+<text x="18" y="192.0" text-anchor="middle" fill="var(--chart-ink-2)" font-size="12" font-family="system-ui,sans-serif" transform="rotate(-90 18 192.0)">pass@1</text>
+<path d="M109.0,305.9 L389.7,156.5 L508.4,63.6" fill="none" stroke="var(--series-3)" stroke-width="2" opacity="0.55"/>
+<line x1="554.8" y1="152.4" x2="554.8" y2="83.8" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="554.8" cy="116.1" r="7" fill="var(--chart-surface)"/>
+<circle cx="554.8" cy="116.1" r="5" fill="var(--series-1)" opacity="0.72"><title>Ablation: no compaction</title></circle>
+<line x1="554.8" y1="297.8" x2="554.8" y2="200.9" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="554.8" cy="249.3" r="7" fill="var(--chart-surface)"/>
+<circle cx="554.8" cy="249.3" r="5" fill="var(--series-1)" opacity="0.72"><title>Ablation: no escalation</title></circle>
+<line x1="597.0" y1="152.4" x2="597.0" y2="83.8" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="597.0" cy="116.1" r="7" fill="var(--chart-surface)"/>
+<circle cx="597.0" cy="116.1" r="5" fill="var(--series-1)" opacity="0.72"><title>Ablation: all tools in prompt</title></circle>
+<line x1="565.9" y1="192.8" x2="565.9" y2="116.1" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="565.9" cy="152.4" r="7" fill="var(--chart-surface)"/>
+<circle cx="565.9" cy="152.4" r="5" fill="var(--series-1)" opacity="0.72"><title>Ablation: executor reviews itself</title></circle>
+<line x1="109.0" y1="358.3" x2="109.0" y2="253.4" stroke="var(--series-3)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="109.0" cy="305.9" r="7" fill="var(--chart-surface)"/>
+<circle cx="109.0" cy="305.9" r="5" fill="var(--series-3)" opacity="1"><title>All cheap (gpt-oss-20b)</title></circle>
+<text x="121.0" y="296.9" text-anchor="start" fill="var(--chart-ink-2)" font-size="11" font-weight="560" font-family="system-ui,-apple-system,sans-serif">All cheap (gpt-oss-20b)</text>
+<line x1="389.7" y1="196.8" x2="389.7" y2="116.1" stroke="var(--series-3)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="389.7" cy="156.5" r="7" fill="var(--chart-surface)"/>
+<circle cx="389.7" cy="156.5" r="5" fill="var(--series-3)" opacity="1"><title>Cascade (fully open weights)</title></circle>
+<text x="401.7" y="147.5" text-anchor="start" fill="var(--chart-ink-2)" font-size="11" font-weight="560" font-family="system-ui,-apple-system,sans-serif">Cascade (fully open weigh...</text>
+<line x1="554.8" y1="152.4" x2="554.8" y2="83.8" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="554.8" cy="116.1" r="7" fill="var(--chart-surface)"/>
+<circle cx="554.8" cy="116.1" r="5" fill="var(--series-1)" opacity="0.72"><title>Cascade (Qwen executor, OSS verifier)</title></circle>
+<line x1="613.6" y1="124.2" x2="613.6" y2="63.6" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="613.6" cy="91.9" r="7" fill="var(--chart-surface)"/>
+<circle cx="613.6" cy="91.9" r="5" fill="var(--series-1)" opacity="0.72"><title>Cascade (frontier verifier)</title></circle>
+<line x1="508.4" y1="87.8" x2="508.4" y2="43.4" stroke="var(--series-3)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="508.4" cy="63.6" r="7" fill="var(--chart-surface)"/>
+<circle cx="508.4" cy="63.6" r="5" fill="var(--series-3)" opacity="1"><title>Cascade (gpt-5.4-mini executor)</title></circle>
+<text x="520.4" y="54.6" text-anchor="start" fill="var(--chart-ink-2)" font-size="11" font-weight="560" font-family="system-ui,-apple-system,sans-serif">Cascade (gpt-5.4-mini exe...</text>
+<line x1="707.0" y1="91.9" x2="707.0" y2="47.5" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="707.0" cy="67.6" r="7" fill="var(--chart-surface)"/>
+<circle cx="707.0" cy="67.6" r="5" fill="var(--series-1)" opacity="0.72"><title>All frontier (Opus 5)</title></circle>
+<text x="719.0" y="58.6" text-anchor="start" fill="var(--chart-ink-2)" font-size="11" font-weight="560" font-family="system-ui,-apple-system,sans-serif">All frontier (Opus 5)</text>
+<line x1="606.0" y1="346.2" x2="606.0" y2="245.3" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="606.0" cy="293.7" r="7" fill="var(--chart-surface)"/>
+<circle cx="606.0" cy="293.7" r="5" fill="var(--series-1)" opacity="0.72"><title>Naive role split (frontier bookends)</title></circle>
+<line x1="577.2" y1="152.4" x2="577.2" y2="83.8" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+<circle cx="577.2" cy="116.1" r="7" fill="var(--chart-surface)"/>
+<circle cx="577.2" cy="116.1" r="5" fill="var(--series-1)" opacity="0.72"><title>Single model (Sonnet 5)</title></circle>
+</svg>
+<details class="chart-table"><summary>Show the numbers</summary>
+
+| Configuration | pass@1 | 95% CI | pass^k | $ / task | $ / success | vs frontier | Pareto |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Local only (Qwen3.5-4B, 4-bit) | 0.439 | [0.367, 0.511] | 0.122 | $0.00000 | $0.00000 | - |  |
+| Oracle (ceiling) | 1.000 | [1.000, 1.000] | 1.000 | $0.00000 | $0.00000 | - |  |
+| Coin flip (floor) | 0.033 | [0.011, 0.061] | 0.011 | $0.00000 | $0.00000 | - |  |
+| **All cheap (gpt-oss-20b)** | 0.622 | [0.550, 0.694] | 0.267 | $0.00070 | $0.00113 | 0.02x | * |
+| **Cascade (fully open weights)** | 0.828 | [0.772, 0.883] | 0.633 | $0.00566 | $0.00683 | 0.13x | * |
+| **Cascade (gpt-5.4-mini executor)** | 0.956 | [0.922, 0.983] | 0.867 | $0.01399 | $0.01464 | 0.28x | * |
+| Ablation: no escalation | 0.700 | [0.633, 0.767] | 0.406 | $0.01381 | $0.01973 | 0.38x |  |
+| Ablation: no compaction | 0.883 | [0.833, 0.928] | 0.744 | $0.01743 | $0.01973 | 0.38x |  |
+| Cascade (Qwen executor, OSS verifier) | 0.883 | [0.833, 0.928] | 0.744 | $0.01743 | $0.01973 | 0.38x |  |
+| Ablation: executor reviews itself | 0.833 | [0.778, 0.883] | 0.656 | $0.01765 | $0.02118 | 0.40x |  |
+| Single model (Sonnet 5) | 0.883 | [0.833, 0.928] | 0.722 | $0.02012 | $0.02278 | 0.43x |  |
+| Ablation: all tools in prompt | 0.883 | [0.833, 0.928] | 0.744 | $0.02285 | $0.02587 | 0.49x |  |
+| Naive role split (frontier bookends) | 0.639 | [0.567, 0.706] | 0.311 | $0.01751 | $0.02741 | 0.52x |  |
+| Cascade (frontier verifier) | 0.917 | [0.872, 0.956] | 0.817 | $0.02637 | $0.02877 | 0.55x |  |
+| All frontier (Opus 5) | 0.950 | [0.917, 0.978] | 0.850 | $0.04980 | $0.05242 | 1.00x |  |
+
+
+</details>
+<figcaption>Each point is one configuration on identical tasks. The vertical bar is the 95% paired-bootstrap interval. The frontier is computed, not drawn by eye: a configuration is on it when nothing else is both cheaper per success and at least as reliable. Unbilled rows are excluded, because free at the margin is not free.</figcaption>
+</figure>

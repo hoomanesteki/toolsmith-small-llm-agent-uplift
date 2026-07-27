@@ -1,0 +1,91 @@
+---
+title: "Results"
+subtitle: "The full matrix, with intervals, breakdowns, and the comparisons that survive correction."
+---
+
+::: {.lede}
+Every configuration ran the same stratified sample of tasks. That is what makes
+the comparisons paired, and paired is what makes the intervals honest.
+:::
+
+## The headline
+
+The column that matters is dollars per **success**, not per task. They rank
+configurations differently, and only one of them is honest: a model that costs a
+third as much and fails twice as often is not cheaper, because you paid for the
+failure and then paid again.
+
+{{< include _generated/headline.md >}}
+
+Rows in bold are on the computed Pareto frontier: nothing else is both cheaper
+per success and at least as reliable. Controls and unbilled rows are excluded
+from the frontier, because a local model has no marginal token cost and would
+dominate the dollars axis by construction at 44% pass@1.
+
+## Quality, ranked
+
+{{< include _generated/quality-bars.html >}}
+
+## By tier
+
+The tiers are designed to separate configurations that look identical on easy
+work. T1 is a single lookup and everything is near ceiling; T3 is conditional
+policy reasoning; T4 is traps, where the correct answer is often a refusal, an
+abstention or a question.
+
+{{< include _generated/by-tier.html >}}
+
+{{< include _generated/by-tier.md >}}
+
+## By world, and the transfer number
+
+`ops` is the primary domain: tasks are generated there, thresholds are tuned
+there. `clinic` is never trained or tuned on, and its schema is deliberately not
+a relabelling: coverage is keyed by two dimensions rather than one, so a system
+that pattern-matched "read the tier row" reads the wrong row rather than no row.
+
+The last column is the honest generalisation number.
+
+{{< include _generated/by-world.md >}}
+
+## Safety and grounding
+
+Abstention alone is not a virtue. A system that abstains on everything scores
+perfectly on abstain recall and is useless, which is why over-refusal sits in
+the next column. An unsanctioned privileged action is the most serious thing
+this harness can record, and it is a separate column for that reason.
+
+{{< include _generated/safety.md >}}
+
+## Which differences are real
+
+Fifteen configurations is 105 pairwise comparisons. At alpha 0.05 you would
+expect about five spurious wins from noise alone, so every comparison is
+Holm-Bonferroni corrected across the whole family. McNemar's exact test is used
+rather than a chi-square approximation, because only the discordant pairs carry
+information and there are often few of them.
+
+The twenty largest differences that survive correction:
+
+{{< include _generated/comparisons.md >}}
+
+## The models under test
+
+{{< include _generated/models.md >}}
+
+Two rows carry `**unverified**` in the last column. Their prices are estimates
+and the report flags them everywhere they appear. `toolsmith probe models`
+checks every id against the provider's live catalogue and fails the build on
+drift; a weekly CI job runs it and opens an issue.
+
+## Reproducing this page
+
+```bash
+uv run toolsmith world build --all
+uv run toolsmith tasks build
+uv run toolsmith matrix run --provider simulated --n 180 --trials 3 --seed 20260726
+uv run toolsmith report build
+```
+
+CI runs exactly that on every push and fails if the committed artifacts differ
+by a byte.
