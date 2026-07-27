@@ -6,6 +6,8 @@ that is not a gate is a claim that decays.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import typer
 
 from toolsmith.cli._ui import console, kv, money, rule, table, verdict
@@ -156,15 +158,23 @@ def model_agnostic() -> None:
 
 @app.command("all")
 def run_all() -> None:
-    """Run every gate. What the Makefile and CI call."""
-    failures: list[str] = []
-    for name, fn in (
-        ("firewall", firewall),
+    """Run every gate. What the Makefile and CI call.
+
+    Each gate is invoked with explicit arguments rather than relying on Typer's
+    defaults, because those defaults are ``OptionInfo`` objects until Typer
+    binds them at the command line.
+    """
+    from toolsmith.tasks.decontam import JACCARD_THRESHOLD
+
+    gates: list[tuple[str, Callable[[], None]]] = [
+        ("firewall", lambda: firewall(json_out=False)),
         ("model-agnostic", model_agnostic),
-        ("decontam", decontam),
+        ("decontam", lambda: decontam(threshold=JACCARD_THRESHOLD)),
         ("hidden-split", hidden_split),
         ("budget", budget),
-    ):
+    ]
+    failures: list[str] = []
+    for name, fn in gates:
         try:
             fn()
         except typer.Exit as exc:

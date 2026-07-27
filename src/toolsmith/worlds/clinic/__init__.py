@@ -22,6 +22,7 @@ from pathlib import Path
 
 from toolsmith.worlds._common import CALCULATOR_TOOL, TODAY_TOOL
 from toolsmith.worlds.base import Entity, Verb, WorldSpec
+from toolsmith.worlds.clinic.samplers import SAMPLERS
 from toolsmith.worlds.clinic.seed import seed_clinic
 from toolsmith.worlds.clinic.tools import TOOLS, coverage_policy
 
@@ -107,6 +108,22 @@ WORLD = WorldSpec(
     seed=seed_clinic,
     entities=ENTITIES,
     tools={**TOOLS, Verb.CALCULATOR: CALCULATOR_TOOL, Verb.TODAY: TODAY_TOOL},
+    samplers=SAMPLERS,
+    lexicon={
+        "principal": "patient",
+        "principal_plural": "patients",
+        "principal_id": "patient_id",
+        "record": "appointment",
+        "record_plural": "appointments",
+        "record_id": "appointment_id",
+        "case": "referral",
+        "case_plural": "referrals",
+        "privileged_action": "billing adjustment",
+        "policy_noun": "coverage policy",
+        "amount_field": "amount_cents",
+        "principal_group": "coverage plan",
+        "record_status_done": "completed",
+    },
     policy=coverage_policy,
     default_seed=20260202,
     notes=(

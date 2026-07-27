@@ -29,6 +29,7 @@ from pathlib import Path
 
 from toolsmith.worlds._common import CALCULATOR_TOOL, TODAY_TOOL
 from toolsmith.worlds.base import Entity, Verb, WorldSpec
+from toolsmith.worlds.doc.samplers import SAMPLERS
 from toolsmith.worlds.doc.seed import seed_doc
 from toolsmith.worlds.doc.tools import TOOLS, publication_policy
 
@@ -113,6 +114,21 @@ WORLD = WorldSpec(
     seed=seed_doc,
     entities=ENTITIES,
     tools={**TOOLS, Verb.CALCULATOR: CALCULATOR_TOOL, Verb.TODAY: TODAY_TOOL},
+    samplers=SAMPLERS,
+    lexicon={
+        "principal": "service",
+        "principal_plural": "services",
+        "principal_id": "service_id",
+        "record": "document",
+        "record_plural": "documents",
+        "record_id": "doc_id",
+        "case": "documentation issue",
+        "case_plural": "documentation issues",
+        "privileged_action": "publication",
+        "policy_noun": "publication rule",
+        "principal_group": "category",
+        "record_status_done": "current",
+    },
     policy=publication_policy,
     default_seed=20260303,
     notes=(

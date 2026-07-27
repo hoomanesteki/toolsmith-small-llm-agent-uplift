@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "test": 700,
+    "test_hidden": 463,
+    "train": 5441,
+    "val": 1152
+  },
+  "hidden_count": 463,
+  "hidden_sha256": "d2f4c2ed77bd584ac19a99f34c5c95b81428349290ef5401d2ef482ad67bfe34",
+  "note": "hidden_sha256 is committed before any optimisation run. Check the git history of this file: its timestamp predates every entry in eval/results/results.jsonl.",
+  "seed": 20260726,
+  "world_digests": {
+    "clinic": "1f234948dc032b84a924ffd0221ba42f80476405ef5ffc787317ee8a37effcb5",
+    "doc": "5d43989cc9e85a2a9210e778893fae400783d0d33b7cb52918e72d0189852c31",
+    "ops": "61e4f223b63a00ebe2177b05792eaa911f24c31c320936528708a1738d14367c"
+  }
+}

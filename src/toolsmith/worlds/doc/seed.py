@@ -23,8 +23,11 @@ import sqlite3
 from toolsmith.worlds._words import AGENTS, FAMILY_NAMES, GIVEN_NAMES, PRIORITIES
 from toolsmith.worlds.base import add_days, iso
 
-N_SERVICES = 36
-N_ISSUES = 140
+#: Deliberately larger than the stem pool, so a dozen stems repeat with a
+#: different suffix. Two 'Atlas' services is what makes a question about "the
+#: Atlas retention period" genuinely ambiguous rather than merely underspecified.
+N_SERVICES = 96
+N_ISSUES = 280
 
 CATEGORIES = ("platform", "data", "security", "product")
 KINDS = ("policy", "runbook", "faq", "design_note")
