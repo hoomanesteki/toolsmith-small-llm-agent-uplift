@@ -59,6 +59,23 @@ jobs:
           enable-cache: true
           python-version: ${{ matrix.python }}
       - run: uv sync --all-extras
+
+      # The suite is 7,756 tasks, each executed against its oracle before it is
+      # accepted, and it is derived from a seed rather than committed. Building
+      # it takes about four minutes, which the four matrix cells would otherwise
+      # each pay. The key is the generator's own source, so a hit is only
+      # possible when the output would have been identical anyway; change a
+      # template and every cell rebuilds.
+      #
+      # Only the derived file is cached. Pointing this at data/tasks would let a
+      # restore write over sample.jsonl and the sealed hash, which are committed
+      # and are the two files the governance gates exist to check.
+      - name: Cache the generated task suite
+        uses: actions/cache@v4
+        with:
+          path: data/tasks/tasks.jsonl
+          key: suite-${{ runner.os }}-py${{ matrix.python }}-${{ hashFiles('src/toolsmith/tasks/**/*.py', 'src/toolsmith/worlds/**/*.py', 'tests/conftest.py') }}
+
       - name: Run tests
         run: uv run pytest --cov --cov-report=xml --cov-report=term-missing
       - name: Upload coverage
@@ -104,6 +121,16 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-extras
+
+      # Without this the job was theatre. A checkout has no data/tasks.jsonl,
+      # and `ci decontam` and `ci hidden-split` used to print PASS when the
+      # dataset was absent, so the two strongest claims in the project went
+      # green on every push without being checked once. Both now fail rather
+      # than pass when they cannot verify, and the dataset is here for them to
+      # verify against.
+      - name: Generate the dataset the gates check
+        run: uv run toolsmith tasks build
+
       - name: Environment report
         run: uv run toolsmith doctor
       - name: License firewall

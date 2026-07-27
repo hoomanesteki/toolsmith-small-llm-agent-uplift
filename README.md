@@ -7,7 +7,7 @@ the cost-versus-quality frontier with confidence intervals and the losing
 transcripts attached.
 
 [**Read the report**](https://hoomanesteki.github.io/toolsmith-small-llm-agent-uplift/)
-· 319 tests · 5 governance gates · $0.00 of a $20 cap spent
+· 322 tests · 5 governance gates · $0.00 of a $20 cap spent
 
 ---
 

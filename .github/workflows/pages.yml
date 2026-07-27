@@ -20,6 +20,10 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  # configure-pages needs this to turn Pages on by itself. Without it the first
+  # run of this workflow on a new fork fails at that step with "Get Pages site
+  # failed", which reads like a build error and is really an unticked setting.
+  actions: read
 
 concurrency:
   group: pages
@@ -48,6 +52,12 @@ jobs:
         run: quarto render docs
 
       - uses: actions/configure-pages@v5
+        with:
+          # Create the Pages site on first run rather than requiring someone to
+          # tick a box in Settings. A report that only publishes after a manual
+          # step is a report that stops publishing the moment nobody remembers
+          # the step.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/_site

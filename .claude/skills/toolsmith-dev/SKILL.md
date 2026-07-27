@@ -32,7 +32,7 @@ Everything else is style. These are load-bearing, and each has a CI gate.
 ## Before you commit
 
 ```bash
-make check     # ruff format, ruff lint, mypy, 319 tests, 5 gates
+make check     # ruff format, ruff lint, mypy, 322 tests, 5 gates
 ```
 
 If you touched anything that produces a published number:

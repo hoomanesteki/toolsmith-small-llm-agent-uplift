@@ -10,8 +10,12 @@ from collections.abc import Callable
 
 import typer
 
-from toolsmith.cli._ui import console, kv, money, rule, table, verdict
+from toolsmith.cli._ui import console, kv, money, rule, skipped, table, verdict
 from toolsmith.config import REPO_ROOT, load_registry
+
+TASKS_DIR = REPO_ROOT / "data" / "tasks"
+DATASET = TASKS_DIR / "tasks.jsonl"
+SEAL = TASKS_DIR / "hidden_split.sha256"
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -64,18 +68,22 @@ def decontam(
     threshold: float = typer.Option(0.6, help="MinHash Jaccard threshold."),
 ) -> None:
     """No test task may overlap a training task."""
-    dataset = REPO_ROOT / "data" / "tasks" / "tasks.jsonl"
-    if not dataset.exists():
+    if not DATASET.exists():
         rule("Decontamination")
-        console.print(
-            "  [dim]No dataset at data/tasks/tasks.jsonl. Run `toolsmith tasks build` first.[/dim]"
-        )
-        verdict(True, "nothing to decontaminate yet")
+        if SEAL.exists():
+            console.print(
+                "  [dim]A sealed split is committed but data/tasks/tasks.jsonl is "
+                "missing, so there is nothing to check it against.[/dim]"
+            )
+            verdict(False, "cannot verify leakage: run `toolsmith tasks build`")
+            raise typer.Exit(1)
+        console.print("  [dim]No dataset and no seal. Nothing has been generated yet.[/dim]")
+        skipped("no dataset to decontaminate")
         return
 
     from toolsmith.tasks.decontam import check_leakage
 
-    report = check_leakage(dataset, threshold=threshold)
+    report = check_leakage(DATASET, threshold=threshold)
     rule("Decontamination")
     kv("tasks", report.n_tasks)
     kv("method", report.method)
@@ -114,17 +122,22 @@ def budget() -> None:
 @app.command("hidden-split")
 def hidden_split() -> None:
     """The hidden test split must match the hash committed before any run."""
-    manifest = REPO_ROOT / "data" / "tasks" / "hidden_split.sha256"
-    dataset = REPO_ROOT / "data" / "tasks" / "tasks.jsonl"
     rule("Hidden split integrity")
-    if not manifest.exists() or not dataset.exists():
+    if SEAL.exists() and not DATASET.exists():
+        console.print(
+            "  [dim]The seal is committed but the dataset it seals is absent, so "
+            "the hash cannot be re-derived.[/dim]"
+        )
+        verdict(False, "cannot verify the seal: run `toolsmith tasks build`")
+        raise typer.Exit(1)
+    if not SEAL.exists():
         console.print("  [dim]Hidden split not yet sealed. Run `toolsmith tasks build`.[/dim]")
-        verdict(True, "nothing sealed yet")
+        skipped("nothing sealed yet")
         return
 
     from toolsmith.tasks.splits import verify_hidden_split
 
-    ok, expected, actual = verify_hidden_split(dataset, manifest)
+    ok, expected, actual = verify_hidden_split(DATASET, SEAL)
     kv("committed hash", expected[:32] + "...")
     kv("current hash", actual[:32] + "...")
     verdict(ok, "hidden split is byte-identical to the sealed commit")
