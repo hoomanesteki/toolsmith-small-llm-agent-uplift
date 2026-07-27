@@ -97,6 +97,16 @@ class RunRecord:
     model_calls: list[ModelCall] = field(default_factory=list)
     usd: float = 0.0
     latency_s: float = 0.0
+    """Modelled latency: provider time-to-first-token plus generation, summed
+    across calls. Deterministic, and the right thing to publish: the harness's
+    own Python overhead is not the agent's latency, and including it makes every
+    artifact differ between runs on the same machine."""
+
+    wall_clock_s: float = 0.0
+    """Measured. Kept for debugging, deliberately NOT written to results.jsonl,
+    because a published artifact that changes when nothing changed cannot be
+    checked for drift."""
+
     context_stats: dict[str, Any] = field(default_factory=dict)
 
     # -- bookkeeping --------------------------------------------------------
