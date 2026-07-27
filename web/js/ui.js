@@ -90,10 +90,17 @@ export function tooltip() {
     move(event) {
       const pad = 14;
       const box = tip.getBoundingClientRect();
-      let x = event.clientX + pad;
-      let y = event.clientY + pad;
-      if (x + box.width > window.innerWidth - 8) x = event.clientX - box.width - pad;
-      if (y + box.height > window.innerHeight - 8) y = event.clientY - box.height - pad;
+      /* A focus event has no pointer, so anchor to the mark itself. Without
+         this the tooltip lands at the top-left corner for anyone arriving by
+         keyboard, which is worse than not showing it. */
+      const mark =
+        event.clientX === undefined ? event.target?.getBoundingClientRect?.() : null;
+      const originX = mark ? mark.left + mark.width / 2 : event.clientX;
+      const originY = mark ? mark.bottom : event.clientY;
+      let x = originX + pad;
+      let y = originY + pad;
+      if (x + box.width > window.innerWidth - 8) x = originX - box.width - pad;
+      if (y + box.height > window.innerHeight - 8) y = originY - box.height - pad;
       tip.style.left = `${Math.max(8, x)}px`;
       tip.style.top = `${Math.max(8, y)}px`;
     },
@@ -121,6 +128,17 @@ export function ticker(el, to, format = fmt.usd, ms = 420) {
   requestAnimationFrame(step);
 }
 
+/* Cut from the middle, not the tail. These labels are "Cascade (Qwen executor,
+   OSS verifier)" and "Cascade (gpt-5.4-mini executor)": the first eight
+   characters are shared and the part that tells them apart is exactly what a
+   tail cut removes. */
+export function shorten(text, max) {
+  const value = String(text ?? "");
+  if (value.length <= max) return value;
+  const head = Math.ceil((max - 1) / 2);
+  return `${value.slice(0, head)}\u2026${value.slice(value.length - (max - 1 - head))}`;
+}
+
 export function chip(text, kind = "") {
   return h("span", { class: `chip ${kind}`.trim() }, kind ? h("i", { class: "dot" }) : null, text);
 }
@@ -145,8 +163,21 @@ export function card(title, hint, ...body) {
   return h("section", { class: "card" }, title ? header : null, ...body);
 }
 
-export function empty(message) {
-  return h("div", { class: "empty" }, message);
+/* The one-line "what am I looking at" every screen shows under its heading,
+   served by /api/screens. The copy existed from the start and nothing rendered
+   it, so the app opened on a dense table and left the visitor to infer the
+   point of it. */
+export function orientation(text) {
+  if (!text) return null;
+  return h("p", { class: "orient" }, text);
+}
+
+export function empty(...message) {
+  /* Variadic so a caller can pass an element. Every empty state used to be one
+     string with a command in backticks, which markdown renders and the DOM does
+     not, so the app told people to run `uv run toolsmith matrix run` with the
+     quotes included. */
+  return h("div", { class: "empty" }, ...message);
 }
 
 export function escape(text) {

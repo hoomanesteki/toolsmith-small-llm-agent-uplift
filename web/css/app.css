@@ -108,6 +108,7 @@ code,
   appearance: none;
   border: 0;
   background: transparent;
+  text-decoration: none;
   color: var(--ink-secondary);
   font: inherit;
   font-size: var(--size-small);
@@ -119,8 +120,9 @@ code,
 }
 .tab:hover {
   color: var(--ink);
+  text-decoration: none;
 }
-.tab[aria-selected="true"] {
+.tab[aria-current="page"] {
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-1);
@@ -146,6 +148,16 @@ code,
     opacity: 0;
     transform: translateY(6px);
   }
+}
+
+/* The one-line orientation, between the heading and the argument. Deliberately
+   quieter than the lede: it tells you where you are, the lede tells you what to
+   think about it. */
+.orient {
+  max-width: 72ch;
+  margin: -0.35rem 0 1rem;
+  color: var(--ink-muted);
+  font-size: var(--size-small);
 }
 
 .lede {

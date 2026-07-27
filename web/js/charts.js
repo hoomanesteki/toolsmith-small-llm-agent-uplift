@@ -24,7 +24,7 @@
  * never cycled past four.
  */
 
-import { clear, fmt, h, s, tooltip } from "./ui.js";
+import { clear, fmt, h, s, shorten, tooltip } from "./ui.js";
 
 const tip = tooltip();
 
@@ -171,20 +171,36 @@ export function paretoChart(rows, { onSelect, selected } = {}) {
         stroke: isSelected ? INK() : "none", "stroke-width": isSelected ? 2 : 0,
       }),
     );
-    // A generous invisible hit area: the mark is 10px, the target is 26px.
+    // A generous hit area: the mark is 10px, the target is 26px.
+    //
+    // Focusable, because selecting a point is the Lab's primary interaction and
+    // it used to be reachable only with a mouse. The tooltip rows are flattened
+    // into the aria-label so a screen reader gets the same numbers the sighted
+    // reader gets on hover, rather than "circle".
+    const rows = [
+      ["pass@1", `${fmt.fixed(p.pass_at_1.estimate)} [${fmt.fixed(p.pass_at_1.ci_low)}, ${fmt.fixed(p.pass_at_1.ci_high)}]`],
+      ["pass^k", fmt.fixed(p.pass_hat_k)],
+      ["$/task", fmt.usd(p.usd_per_task)],
+      ["$/success", fmt.usd(p.usd_per_success)],
+      ["escalation", fmt.pct(p.escalation_rate, 0)],
+      ...(isFrontier ? [["", "on the Pareto frontier"]] : []),
+    ];
     svg.appendChild(
       s("circle", {
         cx, cy, r: 13, fill: "transparent", style: "cursor:pointer",
-        onmouseenter: (e) => tip.show(e, p.label, [
-          ["pass@1", `${fmt.fixed(p.pass_at_1.estimate)} [${fmt.fixed(p.pass_at_1.ci_low)}, ${fmt.fixed(p.pass_at_1.ci_high)}]`],
-          ["pass^k", fmt.fixed(p.pass_hat_k)],
-          ["$/task", fmt.usd(p.usd_per_task)],
-          ["$/success", fmt.usd(p.usd_per_success)],
-          ["escalation", fmt.pct(p.escalation_rate, 0)],
-          ...(isFrontier ? [["", "on the Pareto frontier"]] : []),
-        ]),
+        tabindex: "0",
+        role: "button",
+        "aria-label": `${p.label}. ${rows.map(([k, v]) => (k ? `${k} ${v}` : v)).join(", ")}`,
+        onmouseenter: (e) => tip.show(e, p.label, rows),
         onmousemove: (e) => tip.move(e),
         onmouseleave: () => tip.hide(),
+        onfocus: (e) => tip.show(e, p.label, rows),
+        onblur: () => tip.hide(),
+        onkeydown: (e) => {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          e.preventDefault();
+          onSelect?.(p.pipeline);
+        },
         onclick: () => onSelect?.(p.pipeline),
       }),
     );
@@ -192,7 +208,7 @@ export function paretoChart(rows, { onSelect, selected } = {}) {
     // Direct labels only where they earn it: the frontier and the reference.
     if (isFrontier || p.pipeline === "frontier_all_opus") {
       svg.appendChild(
-        s("text", { x: cx + 12, y: cy - 9, fill: INK2(), "font-size": 11, "font-weight": 560 }, p.label.length > 26 ? `${p.label.slice(0, 25)}...` : p.label),
+        s("text", { x: cx + 12, y: cy - 9, fill: INK2(), "font-size": 11, "font-weight": 560 }, shorten(p.label, 26)),
       );
     }
   }
@@ -244,7 +260,7 @@ export function barChart(rows, { value, low, high, label, format = fmt.fixed, ca
 
     svg.appendChild(
       s("text", { x: pad.left - 12, y: y + barH / 2 + 4, "text-anchor": "end", fill: INK2(), "font-size": 12 },
-        row.label.length > 30 ? `${row.label.slice(0, 29)}...` : row.label),
+        shorten(row.label, 30)),
     );
     // 4px rounded data-end, anchored to the baseline.
     svg.appendChild(
@@ -307,7 +323,7 @@ export function stackedBar(rows, keys, { caption, format = fmt.pct } = {}) {
     const y = pad.top + i * (barH + gap);
     svg.appendChild(
       s("text", { x: pad.left - 12, y: y + barH / 2 + 4, "text-anchor": "end", fill: INK2(), "font-size": 12 },
-        row.label.length > 30 ? `${row.label.slice(0, 29)}...` : row.label),
+        shorten(row.label, 30)),
     );
     let cursor = pad.left;
     keys.forEach((key, k) => {
@@ -374,7 +390,7 @@ export function waterfall(spans, { caption } = {}) {
     const colour = palette[kinds.indexOf(span.kind) % palette.length];
     svg.appendChild(
       s("text", { x: pad.left - 10, y: y + rowH / 2 + 4, "text-anchor": "end", fill: INK2(), "font-size": 11 },
-        span.label.length > 24 ? `${span.label.slice(0, 23)}...` : span.label),
+        shorten(span.label, 24)),
     );
     svg.appendChild(
       s("rect", {

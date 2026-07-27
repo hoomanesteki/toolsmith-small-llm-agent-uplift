@@ -10,7 +10,7 @@
 
 import { api, replay } from "../api.js";
 import { waterfall } from "../charts.js";
-import { card, chip, clear, empty, fmt, h, stat, ticker } from "../ui.js";
+import { card, chip, clear, empty, fmt, h, orientation, stat, ticker } from "../ui.js";
 
 const NODE_ORDER = ["gate_in", "planner", "executor", "reviewer", "escalation", "gate_out", "answer"];
 
@@ -27,6 +27,7 @@ const NODE_LABELS = {
 export async function flow(host) {
   clear(host);
   host.appendChild(h("h1", {}, "One run, watched"));
+  host.appendChild(orientation(blurbs.flow));
   host.appendChild(
     h("p", { class: "lede", html:
       "Every stage emits a typed event, and this is the whole of them. A <strong>replayed</strong> run and a " +
@@ -41,10 +42,20 @@ export async function flow(host) {
   host.appendChild(stage);
 
   if (!traces.total) {
-    stage.appendChild(empty("No committed traces. Run `uv run toolsmith matrix run` to record some."));
+    stage.appendChild(
+      empty(
+        "No committed traces yet. Run ",
+        h("code", {}, "uv run toolsmith matrix run"),
+        " to record some.",
+      ),
+    );
     return;
   }
 
+  /* Arrived from the Lab or the failure gallery? Open on the run they clicked,
+     rather than on whichever trace happens to sort first. Before this the two
+     screens could name a run and not reach it. */
+  const wanted = new URLSearchParams(window.location.search).get("run");
   const traceSelect = h(
     "select",
     { id: "trace-pick", "aria-label": "Recorded run" },
@@ -52,6 +63,8 @@ export async function flow(host) {
       h("option", { value: t.run_id }, `${t.pipeline} · ${t.task_id} · ${t.tier}`),
     ),
   );
+  if (wanted && traces.traces.some((t) => t.run_id === wanted)) traceSelect.value = wanted;
+
   const speed = h(
     "select",
     { "aria-label": "Playback speed" },
@@ -97,6 +110,11 @@ export async function flow(host) {
   };
 
   play.click();
+
+  /* Leaving this screen with a live run open used to keep an EventSource
+     pushing events into a detached DOM until the run finished. The router calls
+     this before it clears the host. */
+  return () => stop?.();
 }
 
 /**
