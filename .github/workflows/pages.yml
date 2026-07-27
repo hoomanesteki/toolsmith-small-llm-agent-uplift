@@ -5,6 +5,12 @@ name: Report site
 # The site is built from the committed artifacts in eval/, so it never needs an
 # API key and never differs from what the repository claims. If the artifacts
 # and the code disagree, the `reproduce` job in ci.yml has already failed.
+#
+# Publishing is gated on Pages being switched on for the repository, which is a
+# setting rather than a build step and cannot be done from here. The render is
+# not gated: it runs on every push and fails loudly if the site stops building.
+# That split is deliberate. A red badge that means "somebody has not clicked a
+# checkbox" trains people to ignore red badges.
 
 on:
   push:
@@ -20,10 +26,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  # configure-pages needs this to turn Pages on by itself. Without it the first
-  # run of this workflow on a new fork fails at that step with "Get Pages site
-  # failed", which reads like a build error and is really an unticked setting.
-  actions: read
 
 concurrency:
   group: pages
@@ -33,6 +35,8 @@ jobs:
   build:
     name: Render
     runs-on: ubuntu-latest
+    outputs:
+      publishable: ${{ steps.pages.outputs.enabled }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,20 +55,45 @@ jobs:
       - name: Render the site
         run: quarto render docs
 
+      - name: Check every page kept its generated content
+        run: |
+          # A missing {{< include >}} renders as a silent blank, which is the
+          # worst failure mode a report has: it still looks finished.
+          for page in docs/_site/index.html docs/_site/results.html docs/_site/findings.html; do
+            grep -q "<table" "$page" || { echo "::error::$page lost its tables"; exit 1; }
+          done
+
+      - name: Is Pages switched on for this repository
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::The site rendered. Publishing is off because Pages is not enabled for this repository. Turn it on under Settings, Pages, Source: GitHub Actions, then re-run this workflow."
+          fi
+
       - uses: actions/configure-pages@v5
-        with:
-          # Create the Pages site on first run rather than requiring someone to
-          # tick a box in Settings. A report that only publishes after a manual
-          # step is a report that stops publishing the moment nobody remembers
-          # the step.
-          enablement: true
+        if: steps.pages.outputs.enabled == 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.pages.outputs.enabled == 'true'
         with:
           path: docs/_site
+
+      # Always keep the rendered site downloadable, so the report is reachable
+      # from the run even when it has nowhere to publish to.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-site
+          path: docs/_site
+          retention-days: 14
 
   deploy:
     name: Deploy
     needs: build
+    if: needs.build.outputs.publishable == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
