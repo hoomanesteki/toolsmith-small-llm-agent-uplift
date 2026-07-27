@@ -104,9 +104,18 @@ jobs:
         run: |
           # A missing {{< include >}} renders as a silent blank in Quarto, which
           # is the worst possible failure mode for a report.
-          for page in docs/_site/index.html docs/_site/results.html docs/_site/findings.html; do
+          for page in docs/_site/index.html docs/_site/results.html docs/_site/findings.html docs/_site/failures.html; do
             if ! grep -q "<table" "$page"; then
               echo "::error::$page has no table: an include resolved to nothing."
+              exit 1
+            fi
+          done
+          # The two diagram pages fail differently: a mermaid block with a
+          # syntax error renders as an empty box rather than an error, so the
+          # page still looks finished.
+          for page in docs/_site/method.html docs/_site/governance.html; do
+            if ! grep -q 'class="mermaid' "$page"; then
+              echo "::error::$page lost its diagram."
               exit 1
             fi
           done

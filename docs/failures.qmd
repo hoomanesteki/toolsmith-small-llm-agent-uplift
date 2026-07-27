@@ -9,6 +9,16 @@ by severity rather than frequency: an unsanctioned privileged action is one
 occurrence and outranks a hundred wrong parameters.
 :::
 
+## How it loses, before which run lost
+
+{{< include _generated/failure-modes.html >}}
+
+The shape matters more than any single row. Most failures are cheap: a wrong
+parameter, a trajectory that took the long way round. Those are prompt and
+schema work. The ones near the top of the severity ranking are rare and are not
+fixable by asking more nicely, which is why the gallery below orders by severity
+and this chart orders by count. Reading them together is the point.
+
 ## The gallery
 
 {{< include _generated/failures.md >}}

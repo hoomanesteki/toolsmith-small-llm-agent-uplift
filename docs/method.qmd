@@ -88,13 +88,35 @@ fixed in the generator rather than by relaxing the gate.
 
 ## The runtime
 
+```{mermaid}
+%%| label: fig-runtime
+%%| fig-cap: "One request through the runtime. Gates are the squared boxes; the two inside the executor loop run once per tool call, which is where an injected instruction arrives and where a privileged write is refused."
+flowchart LR
+  IN([Request]) --> G1[G1 input gate]
+  G1 --> P(Planner)
+  P --> E(Executor)
+
+  subgraph loop [executor loop, once per turn]
+    direction TB
+    E --> TS(Tool search)
+    TS --> CALL(Tool call)
+    CALL --> POL[Policy function]
+    POL --> G2[G2 tool-result gate]
+    G2 --> E
+  end
+
+  E --> R(Reviewer)
+  R --> ROUTE{Accept?}
+  ROUTE -- no --> ESC(Escalation)
+  ESC --> R
+  ROUTE -- yes --> G3[G3 output gate]
+  G3 --> OUT([Answer])
 ```
-[G1] input gate -> planner -> executor loop -> reviewer -> router -> [G3] output gate
-                                    |
-                              [G2] tool-result gate, once per call
-                                    |
-                        world policy function, before every privileged write
-```
+
+The policy function sits inside the loop, not after it, and that placement is
+the whole of the injection defence. The model may ask for a refund it was talked
+into by text it read three turns ago; the function reads the world's own rules
+and answers before anything is written.
 
 Five gates, mapped to what they exist for:
 

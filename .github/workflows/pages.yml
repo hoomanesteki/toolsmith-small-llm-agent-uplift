@@ -59,8 +59,11 @@ jobs:
         run: |
           # A missing {{< include >}} renders as a silent blank, which is the
           # worst failure mode a report has: it still looks finished.
-          for page in docs/_site/index.html docs/_site/results.html docs/_site/findings.html; do
+          for page in docs/_site/index.html docs/_site/results.html docs/_site/findings.html docs/_site/failures.html; do
             grep -q "<table" "$page" || { echo "::error::$page lost its tables"; exit 1; }
+          done
+          for page in docs/_site/method.html docs/_site/governance.html; do
+            grep -q 'class="mermaid' "$page" || { echo "::error::$page lost its diagram"; exit 1; }
           done
 
       - name: Is Pages switched on for this repository
