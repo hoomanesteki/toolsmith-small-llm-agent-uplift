@@ -1,0 +1,247 @@
+# =============================================================================
+# configs/pipelines/matrix.yaml  -  the rows of the evaluation matrix
+# =============================================================================
+#
+# Each entry is one complete answer to "which model runs which part of the
+# agent". They are compared on identical tasks, with paired bootstrap CIs, and
+# ranked by dollars per SUCCESS rather than dollars per task.
+#
+# Deliberate inclusions:
+#   oracle_ceiling / random_floor  make every other row legible
+#   frontier_all_opus              the row everyone assumes is best
+#   single_sonnet                  the boring one-model config that is hard to beat
+#   naive_role_split               the intuitive hypothesis this project falsifies
+#   cascade_*                      what actually wins
+#   ablation_*                     one lever changed, everything else held
+# =============================================================================
+
+pipelines:
+
+  # -------------------------------------------------------------- controls --
+
+  oracle_ceiling:
+    label: "Oracle (ceiling)"
+    description: >-
+      Replays the gold tool-call program exactly. Not a model. Present so that
+      every other row can be read as a fraction of achievable, not of 100%.
+    tags: [control, ceiling]
+    roles:
+      planner: oracle
+      executor: oracle
+      reviewer: oracle
+      escalate_on: [never]
+      max_turns: 12
+      max_usd_per_task: 0.01
+
+  random_floor:
+    label: "Coin flip (floor)"
+    description: >-
+      Picks a schema-valid but arbitrary tool each turn. Any configuration that
+      cannot clear this row is measuring noise.
+    tags: [control, floor]
+    roles:
+      planner: coinflip
+      executor: coinflip
+      reviewer: coinflip
+      escalate_on: [never]
+      max_turns: 8
+      max_usd_per_task: 0.01
+
+  # ------------------------------------------------------------- baselines --
+
+  frontier_all_opus:
+    label: "All frontier (Opus 5)"
+    description: >-
+      The reference row. One frontier model for every stage. Note the
+      self-review tag: its reviewer shares the executor's family, which is
+      exactly the configuration arXiv 2310.01798 shows degrades accuracy. We
+      keep it, flag it, and measure the penalty.
+    tags: [baseline, frontier, self-review]
+    roles:
+      planner: claude-opus-5
+      executor: claude-opus-5
+      reviewer: claude-opus-5
+      escalate_on: [never]
+      max_turns: 10
+      max_usd_per_task: 1.50
+
+  single_sonnet:
+    label: "Single model (Sonnet 5)"
+    description: >-
+      One model, one vendor, one shared KV cache, no boundaries. Boring, and
+      once prompt caching is on it beats the intuitive three-model split.
+    tags: [baseline, frontier, self-review]
+    roles:
+      planner: claude-sonnet-5
+      executor: claude-sonnet-5
+      reviewer: claude-sonnet-5
+      escalate_on: [never]
+      max_turns: 10
+      max_usd_per_task: 1.00
+
+  budget_floor_oss20b:
+    label: "All cheap (gpt-oss-20b)"
+    description: "Cheapest per token. The row that shows why per-token price is the wrong axis."
+    tags: [baseline, cheap, self-review]
+    roles:
+      planner: groq-oss-20b
+      executor: groq-oss-20b
+      reviewer: groq-oss-20b
+      escalate_on: [never]
+      max_turns: 10
+      max_usd_per_task: 0.20
+
+  local_only:
+    label: "Local only (Qwen3.5-4B, 4-bit)"
+    description: "Runs on the laptop with no network. Free at the margin, expensive in wall-clock."
+    tags: [baseline, local, self-review]
+    roles:
+      planner: local-mlx-qwen-4b
+      executor: local-mlx-qwen-4b
+      reviewer: local-mlx-qwen-4b
+      escalate_on: [never]
+      max_turns: 10
+      max_usd_per_task: 0.01
+
+  # ------------------------------------------------- the falsified hypothesis
+
+  naive_role_split:
+    label: "Naive role split (frontier bookends)"
+    description: >-
+      Frontier planner, cheap executor, frontier reviewer, chosen because the
+      planner's input:output ratio looks cheap. The reasoning is inverted: the
+      executor carries 73% of spend and is the only role whose errors compound.
+      This row exists to be beaten.
+    tags: [hypothesis]
+    roles:
+      planner: claude-opus-5
+      executor: groq-oss-120b
+      reviewer: claude-opus-5
+      escalate_on: [never]
+      max_turns: 10
+      max_usd_per_task: 1.00
+
+  # ---------------------------------------------------------- what wins ----
+
+  cascade_default:
+    label: "Cascade (Qwen executor, OSS verifier)"
+    description: >-
+      Frontier planner because it runs once. Strong-mid executor because it
+      runs N times and its error compounds as q^N. Cheap family-disjoint
+      reviewer. Frontier escalation on reject, which is a second independent
+      attempt and therefore raises success above the all-frontier row.
+    tags: [cascade, recommended]
+    roles:
+      planner: claude-opus-5
+      executor: groq-qwen36-27b
+      reviewer: groq-oss-120b
+      escalate_to: claude-opus-5
+      escalate_on: [verifier_reject, schema_invalid, low_confidence]
+      max_turns: 10
+      max_usd_per_task: 0.60
+      confidence_threshold: 0.55
+
+  cascade_frontier_verify:
+    label: "Cascade (frontier verifier)"
+    description: "Same executor, frontier reviewer. Buys detection rate, which is the variable that drives everything."
+    tags: [cascade]
+    roles:
+      planner: claude-opus-5
+      executor: groq-qwen36-27b
+      reviewer: claude-opus-5
+      escalate_to: claude-opus-5
+      escalate_on: [verifier_reject, schema_invalid, low_confidence]
+      max_turns: 10
+      max_usd_per_task: 1.00
+      confidence_threshold: 0.55
+
+  cascade_all_open:
+    label: "Cascade (fully open weights)"
+    description: >-
+      No forbidden-licence model anywhere. Every output is training-legal, so
+      this is the only row whose transcripts may become a training set.
+    tags: [cascade, open-weights, training-legal]
+    roles:
+      planner: groq-oss-120b
+      executor: groq-qwen36-27b
+      reviewer: groq-oss-20b
+      escalate_to: groq-oss-120b
+      escalate_on: [verifier_reject, schema_invalid]
+      max_turns: 10
+      max_usd_per_task: 0.15
+      confidence_threshold: 0.55
+
+  cascade_mini_executor:
+    label: "Cascade (gpt-5.4-mini executor)"
+    description: >-
+      Five times the token price of gpt-oss-120b and cheaper per success,
+      because 83.3% beats 65.8% and you pay for every failure twice.
+    tags: [cascade, counterexample]
+    roles:
+      planner: claude-opus-5
+      executor: gpt-54-mini
+      reviewer: groq-oss-120b
+      escalate_to: claude-opus-5
+      escalate_on: [verifier_reject, schema_invalid, low_confidence]
+      max_turns: 10
+      max_usd_per_task: 0.80
+      confidence_threshold: 0.55
+
+  # ------------------------------------------------------------ ablations --
+  # One lever moved, everything else held identical to cascade_default.
+
+  ablation_no_tool_search:
+    label: "Ablation: all tools in prompt"
+    description: "Track C, inverted. Every tool schema in the system prompt on every turn."
+    tags: [ablation, track-c]
+    roles:
+      planner: claude-opus-5
+      executor: groq-qwen36-27b
+      reviewer: groq-oss-120b
+      escalate_to: claude-opus-5
+      escalate_on: [verifier_reject, schema_invalid, low_confidence]
+      tool_exposure: all_in_prompt
+      max_turns: 10
+      max_usd_per_task: 0.60
+      confidence_threshold: 0.55
+
+  ablation_no_compaction:
+    label: "Ablation: no compaction"
+    description: "Transcript grows unbounded until the turn budget stops it."
+    tags: [ablation, track-c]
+    roles:
+      planner: claude-opus-5
+      executor: groq-qwen36-27b
+      reviewer: groq-oss-120b
+      escalate_to: claude-opus-5
+      escalate_on: [verifier_reject, schema_invalid, low_confidence]
+      compaction_at: 1.0
+      max_turns: 10
+      max_usd_per_task: 0.60
+      confidence_threshold: 0.55
+
+  ablation_no_escalation:
+    label: "Ablation: no escalation"
+    description: "The cascade with its second attempt removed. Isolates what escalation alone buys."
+    tags: [ablation, track-b]
+    roles:
+      planner: claude-opus-5
+      executor: groq-qwen36-27b
+      reviewer: groq-oss-120b
+      escalate_on: [never]
+      max_turns: 10
+      max_usd_per_task: 0.60
+
+  ablation_self_review:
+    label: "Ablation: executor reviews itself"
+    description: "Same family for executor and reviewer. Measures the self-review penalty directly."
+    tags: [ablation, self-review]
+    roles:
+      planner: claude-opus-5
+      executor: groq-qwen36-27b
+      reviewer: groq-qwen36-27b
+      escalate_to: claude-opus-5
+      escalate_on: [verifier_reject, schema_invalid, low_confidence]
+      max_turns: 10
+      max_usd_per_task: 0.60
+      confidence_threshold: 0.55

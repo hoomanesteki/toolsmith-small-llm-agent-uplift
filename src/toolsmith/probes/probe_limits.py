@@ -1,0 +1,150 @@
+"""Discover real rate limits by reading them off a response header.
+
+Dev-tier limits are auth-gated and frequently undocumented, so the honest way
+to learn them is to make the smallest possible request and read the
+``x-ratelimit-*`` headers that come back. One token, a fraction of a cent, and
+the answer is authoritative for *your* account rather than for the marketing
+page.
+
+Writes ``configs/limits.yaml`` with ``source: probed``, replacing whatever
+documented or assumed values were there.
+"""
+
+from __future__ import annotations
+
+import datetime as dt
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import httpx
+import yaml
+
+from toolsmith.config import CONFIG_DIR, RateLimit, Registry, load_registry
+from toolsmith.env import api_key
+
+#: A one-token request per provider: the cheapest thing that returns headers.
+PING: dict[str, dict[str, Any]] = {
+    "groq": {
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "auth": "bearer",
+        "body": {"messages": [{"role": "user", "content": "."}], "max_tokens": 1},
+        "model_field": "model",
+    },
+    "openai": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "auth": "bearer",
+        "body": {"messages": [{"role": "user", "content": "."}], "max_tokens": 1},
+        "model_field": "model",
+    },
+    "anthropic": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "auth": "x-api-key",
+        "body": {"messages": [{"role": "user", "content": "."}], "max_tokens": 1},
+        "model_field": "model",
+    },
+    "mistral": {
+        "url": "https://api.mistral.ai/v1/chat/completions",
+        "auth": "bearer",
+        "body": {"messages": [{"role": "user", "content": "."}], "max_tokens": 1},
+        "model_field": "model",
+    },
+}
+
+_DURATION = re.compile(r"(?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?")
+
+
+@dataclass
+class ProbeOutcome:
+    provider: str
+    limit: RateLimit | None
+    note: str
+
+
+def _parse_int(value: str | None) -> int | None:
+    if not value:
+        return None
+    try:
+        return int(float(value))
+    except ValueError:
+        return None
+
+
+def probe_provider(provider: str, model_id: str, timeout: float = 30.0) -> ProbeOutcome:
+    if provider not in PING:
+        return ProbeOutcome(provider, None, "no ping endpoint defined")
+    key = api_key(provider)
+    if not key:
+        return ProbeOutcome(provider, None, "no API key")
+
+    conf = PING[provider]
+    headers = {"content-type": "application/json"}
+    if conf["auth"] == "bearer":
+        headers["Authorization"] = f"Bearer {key}"
+    else:
+        headers["x-api-key"] = key
+        headers["anthropic-version"] = "2023-06-01"
+
+    body = dict(conf["body"])
+    body[conf["model_field"]] = model_id
+
+    try:
+        response = httpx.post(conf["url"], headers=headers, json=body, timeout=timeout)
+    except httpx.HTTPError as exc:
+        return ProbeOutcome(provider, None, f"request failed: {exc}")
+
+    h = {k.lower(): v for k, v in response.headers.items()}
+    limit = RateLimit(
+        provider=provider,  # type: ignore[arg-type]
+        rpm=_parse_int(h.get("x-ratelimit-limit-requests")),
+        tpm=_parse_int(h.get("x-ratelimit-limit-tokens")),
+        rpd=_parse_int(h.get("x-ratelimit-limit-requests-day")),
+        tpd=_parse_int(h.get("x-ratelimit-limit-tokens-day")),
+        probed_on=dt.date.today(),
+        source="probed",
+        notes=f"http {response.status_code}; headers seen: "
+        + ",".join(sorted(k for k in h if k.startswith("x-ratelimit"))),
+    )
+    if limit.rpm is None and limit.tpm is None:
+        return ProbeOutcome(provider, limit, "no x-ratelimit headers returned")
+    return ProbeOutcome(provider, limit, "ok")
+
+
+def probe_all(registry: Registry | None = None) -> list[ProbeOutcome]:
+    registry = registry or load_registry()
+    cheapest: dict[str, str] = {}
+    for spec in registry.models.values():
+        if spec.provider not in PING:
+            continue
+        current = cheapest.get(spec.provider)
+        if current is None or spec.price_in_per_m < registry.models[current].price_in_per_m:
+            cheapest[spec.provider] = spec.key
+    return [
+        probe_provider(provider, registry.models[key].model_id)
+        for provider, key in sorted(cheapest.items())
+    ]
+
+
+def write_limits(
+    outcomes: list[ProbeOutcome], path: Path | None = None, registry: Registry | None = None
+) -> Path:
+    """Merge probed limits into ``configs/limits.yaml``, keeping unprobed rows."""
+    registry = registry or load_registry()
+    path = path or CONFIG_DIR / "limits.yaml"
+    merged: dict[str, dict[str, Any]] = {
+        name: limit.model_dump(mode="json", exclude_none=True)
+        for name, limit in registry.limits.items()
+    }
+    for outcome in outcomes:
+        if outcome.limit is not None and outcome.note == "ok":
+            merged[outcome.provider] = outcome.limit.model_dump(mode="json", exclude_none=True)
+
+    header = (
+        "# GENERATED by `toolsmith probe limits --write`.\n"
+        f"# Last written {dt.date.today().isoformat()}.\n"
+        "# Rows with source: probed came from live x-ratelimit headers on this account.\n"
+        "# Rows with source: documented or assumed have not been verified against a key.\n\n"
+    )
+    path.write_text(header + yaml.safe_dump({"limits": merged}, sort_keys=True), encoding="utf-8")
+    return path

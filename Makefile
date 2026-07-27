@@ -1,0 +1,91 @@
+.DEFAULT_GOAL := help
+UV ?= uv
+RUN := $(UV) run
+
+.PHONY: help
+help:  ## Show this help
+	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
+	  | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+
+# ------------------------------------------------------------------ setup ---
+.PHONY: install
+install:  ## Create the venv and install everything (dev + serve + decontam)
+	$(UV) sync --all-extras
+
+.PHONY: lock
+lock:  ## Refresh uv.lock
+	$(UV) lock
+
+# ------------------------------------------------------------------ quality -
+.PHONY: fmt
+fmt:  ## Auto-format and auto-fix
+	$(RUN) ruff format src tests
+	$(RUN) ruff check --fix src tests
+
+.PHONY: lint
+lint:  ## Lint + format check + type check
+	$(RUN) ruff format --check src tests
+	$(RUN) ruff check src tests
+	$(RUN) mypy
+
+.PHONY: test
+test:  ## Run the test suite
+	$(RUN) pytest
+
+.PHONY: cov
+cov:  ## Run tests with coverage
+	$(RUN) pytest --cov --cov-report=term-missing
+
+.PHONY: check
+check: lint test gates  ## Everything CI runs
+
+# ------------------------------------------------------------------- gates --
+.PHONY: gates
+gates: firewall decontam budget  ## All CI policy gates
+
+.PHONY: firewall
+firewall:  ## License firewall: no forbidden model may appear in training data
+	$(RUN) toolsmith ci firewall
+
+.PHONY: decontam
+decontam:  ## Train/test leakage check
+	$(RUN) toolsmith ci decontam
+
+.PHONY: budget
+budget:  ## Assert cumulative spend is under the cap
+	$(RUN) toolsmith ci budget
+
+# ------------------------------------------------------------------- build --
+.PHONY: worlds
+worlds:  ## Build the three sandboxed worlds and print digests
+	$(RUN) toolsmith world build --all
+
+.PHONY: tasks
+tasks:  ## Generate the task suite with oracle programs and splits
+	$(RUN) toolsmith tasks build
+
+.PHONY: matrix
+matrix:  ## Run the full evaluation matrix (simulated provider, $0)
+	$(RUN) toolsmith matrix run --provider simulated
+
+.PHONY: report
+report:  ## Regenerate every published artifact from results.jsonl
+	$(RUN) toolsmith report build
+
+.PHONY: site
+site: report  ## Render the Quarto site into docs/_site
+	quarto render docs
+
+.PHONY: serve
+serve:  ## Run the control plane on http://127.0.0.1:7860
+	$(RUN) uvicorn app.main:app --host 127.0.0.1 --port 7860 --reload
+
+# ------------------------------------------------------------------- all ----
+.PHONY: all
+all: worlds tasks matrix report site  ## Full reproduction, end to end
+
+.PHONY: clean
+clean:  ## Remove generated artifacts (keeps committed fixtures)
+	rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov .coverage
+	rm -rf build/worlds build/tasks docs/_site docs/.quarto
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +

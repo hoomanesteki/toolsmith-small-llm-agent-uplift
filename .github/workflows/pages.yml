@@ -1,0 +1,64 @@
+name: Report site
+
+# Renders the Quarto site and publishes it to GitHub Pages.
+#
+# The site is built from the committed artifacts in eval/, so it never needs an
+# API key and never differs from what the repository claims. If the artifacts
+# and the code disagree, the `reproduce` job in ci.yml has already failed.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "eval/**"
+      - "src/toolsmith/report/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.8.23"
+
+      - name: Regenerate report data from results.jsonl
+        run: uv run toolsmith report build
+
+      - name: Render the site
+        run: quarto render docs
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

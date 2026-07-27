@@ -1,0 +1,14 @@
+# The spend cap is enforced in code, not in intention.
+#
+# toolsmith.ledger.CostLedger.check_affordable() runs BEFORE every live request
+# and raises BudgetExceeded if the call would push cumulative live spend past
+# cap_usd. Simulated runs are recorded but never consume the cap, because they
+# never leave the process.
+#
+# `toolsmith ci budget` fails the build if eval/costs.csv ever exceeds the cap.
+
+budget:
+  cap_usd: 20.00          # the whole project, forever
+  warn_at_usd: 12.00      # loud warning in the CLI past this point
+  per_run_cap_usd: 3.00   # a single `toolsmith matrix run` may not exceed this
+  stop_on_breach: true

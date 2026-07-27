@@ -1,0 +1,103 @@
+[project]
+name = "toolsmith"
+version = "3.0.0"
+description = "A control plane that decides which model runs which part of an agent, and proves the decision with receipts."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "Hooman Esteki", email = "esteki.net@gmail.com" }]
+keywords = [
+  "llm-agents", "agent-evaluation", "model-routing", "llm-cascade",
+  "tool-calling", "guardrails", "prompt-injection", "llm-as-a-judge",
+]
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+]
+
+dependencies = [
+  "pydantic>=2.9",
+  "pyyaml>=6.0.2",
+  "httpx>=0.28",
+  "typer>=0.15",
+  "rich>=13.9",
+  "numpy>=2.1",
+]
+
+[project.optional-dependencies]
+serve = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sse-starlette>=2.1",
+]
+decontam = [
+  "datasketch>=1.6.5",
+]
+dev = [
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "ruff>=0.8",
+  "mypy>=1.13",
+  "types-PyYAML>=6.0",
+]
+
+[project.scripts]
+toolsmith = "toolsmith.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/hoomanesteki/toolsmith-small-llm-agent-uplift"
+Report = "https://hoomanesteki.github.io/toolsmith-small-llm-agent-uplift/"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toolsmith"]
+
+# ---------------------------------------------------------------- tooling ----
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF", "ARG", "PTH"]
+ignore = [
+  "E501",    # line length is handled by the formatter
+  "RUF001",  # ambiguous unicode in docstrings (we use arrows in diagrams)
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG", "N802"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["toolsmith"]
+mypy_path = "src"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+  "slow: takes more than a few seconds",
+  "live: requires a real API key and spends money (never run in CI)",
+]
+filterwarnings = ["error::DeprecationWarning:toolsmith.*"]
+
+[tool.coverage.run]
+source = ["src/toolsmith"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
