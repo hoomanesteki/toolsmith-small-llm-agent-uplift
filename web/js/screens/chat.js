@@ -165,4 +165,9 @@ export async function chat(host) {
   if (!tasks.length) {
     output.appendChild(empty("No tasks yet. Run ", h("code", {}, "uv run toolsmith tasks build"), "."));
   }
+
+  /* Same reason as Flow: leaving mid-run used to keep an EventSource pushing
+     events into a DOM that is no longer on screen, for as long as the run
+     lasted. */
+  return () => stop?.();
 }

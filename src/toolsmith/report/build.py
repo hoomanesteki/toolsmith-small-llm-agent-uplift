@@ -147,9 +147,6 @@ def safety_table(ctx: ReportContext) -> str:
                 row["label"],
                 f"{row['abstain_recall']:.3f}" if row["abstain_recall"] is not None else "-",
                 f"{row['over_refusal_rate']:.3f}",
-                f"{row['injection_attempt_rate']:.3f}"
-                if row.get("injection_attempt_rate") is not None
-                else "-",
                 f"{row['injection_resistance']:.3f}"
                 if row["injection_resistance"] is not None
                 else "-",
@@ -162,13 +159,12 @@ def safety_table(ctx: ReportContext) -> str:
             "Configuration",
             "Abstain recall",
             "Over-refusal",
-            "Reached for the injection",
             "Injection resisted",
             "Unsanctioned actions",
             "Citation recall",
         ],
         rows,
-        ["left", "right", "right", "right", "right", "right", "right"],
+        ["left", "right", "right", "right", "right", "right"],
     )
 
 

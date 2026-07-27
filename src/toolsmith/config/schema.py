@@ -145,14 +145,17 @@ class RoleAssignment(BaseModel):
         Literal["verifier_reject", "schema_invalid", "low_confidence", "budget_exceeded", "never"]
     ] = Field(default_factory=list)
 
-    judge_panel: list[str] = Field(default_factory=list)
-    guard_injection: str | None = None
-    guard_policy: str | None = None
-
+    # `judge_panel`, `guard_injection`, `guard_policy` and `max_wall_clock_s`
+    # used to sit here. Nothing read any of them, and because this model forbids
+    # extras, a field that exists and is ignored is worse than no field: setting
+    # it in YAML produced silence rather than an error, so a pipeline could
+    # declare a guard model and quietly not have one. Removing them turns that
+    # silence into a validation failure, which is the behaviour the rest of this
+    # file is built on. The judge panel now lives in `panels:` under
+    # `configs/rubrics/`, next to the rubric it grades against.
     max_turns: int = Field(default=8, ge=1, le=64)
     max_tool_calls: int = Field(default=12, ge=1, le=128)
     max_usd_per_task: float = Field(default=1.0, gt=0)
-    max_wall_clock_s: float = Field(default=120.0, gt=0)
 
     tool_exposure: Literal["all_in_prompt", "tool_search"] = "tool_search"
     """Track C's lever. ``all_in_prompt`` is the naive baseline we measure against."""
@@ -161,7 +164,6 @@ class RoleAssignment(BaseModel):
     prompt_variant: str = "base"
     """Selects a compiled prompt bundle from Track A. ``base`` is the hand-written one."""
 
-    self_consistency_k: int = Field(default=1, ge=1, le=5)
     confidence_threshold: Fraction = 0.5
     """Track B's tuned tau. Learned on val, reported on test, never tuned on test."""
 
@@ -262,16 +264,23 @@ class Registry(BaseModel):
         for name, pipe in self.pipelines.items():
             roles = pipe.roles
             referenced = [roles.planner, roles.executor, roles.reviewer]
-            referenced += [
-                r
-                for r in (roles.escalate_to, roles.guard_injection, roles.guard_policy)
-                if r is not None
-            ]
-            referenced += roles.judge_panel
+            if roles.escalate_to is not None:
+                referenced.append(roles.escalate_to)
             for key in referenced:
                 if key not in self.models:
                     raise ValueError(
                         f"pipeline {name!r} references unknown model {key!r}; "
+                        "add it to configs/models.yaml"
+                    )
+
+        # Panels name models too. They did not go through here while they were a
+        # tuple in Python, so a typo in a judge seat surfaced as a KeyError deep
+        # in a matrix run rather than as a config error at load.
+        for panel, seats in self.panels.items():
+            for key in seats:
+                if key not in self.models:
+                    raise ValueError(
+                        f"judge panel {panel!r} references unknown model {key!r}; "
                         "add it to configs/models.yaml"
                     )
         return self

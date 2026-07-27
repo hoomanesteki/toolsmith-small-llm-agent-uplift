@@ -54,7 +54,14 @@ class ConfidenceSignals:
     tool_calls_made: int = 0
     tool_budget: int = 0
     self_consistency: float | None = None
-    """Agreement across k cheap samples, when ``self_consistency_k`` > 1."""
+    """Agreement across k cheap samples.
+
+    Not currently wired to a configuration knob. There was a
+    ``self_consistency_k`` field for it that nothing read, which under a schema
+    that forbids extras meant setting it produced silence rather than an error.
+    The function stays because the router calls it with a fixed k; the field
+    went because a knob that does nothing is worse than no knob.
+    """
 
     logprob: float | None = None
 

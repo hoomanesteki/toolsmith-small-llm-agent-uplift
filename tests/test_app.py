@@ -49,10 +49,16 @@ def test_config_exposes_every_model_with_its_licence_terms():
 def test_config_flags_unverified_prices():
     """A model with no verification date must be visibly unverified in the UI."""
     payload = client.get("/api/config").json()
-    unverified = [k for k, m in payload["models"].items() if m["verified_on"] is None]
-    for key in unverified:
-        assert "UNVERIFIED" in payload["models"][key]["notes"].upper() or True
-    assert isinstance(unverified, list)
+    models = payload["models"]
+    unverified = [k for k, m in models.items() if m["verified_on"] is None]
+    # `or True` used to be on the end of this, which turned a claim the report
+    # repeats on every page into a loop that could not fail. It also asserted
+    # the wrong thing: it looked for the word "UNVERIFIED" in a human-written
+    # note, so the guarantee held only as long as somebody remembered to type
+    # it. The flag is derived from the date now, and this checks the two agree.
+    assert unverified, "no unverified model to check, so this test proves nothing"
+    for key, model in models.items():
+        assert model["unverified"] == (model["verified_on"] is None), key
 
 
 def test_config_reports_the_budget_from_the_ledger():

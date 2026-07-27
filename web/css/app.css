@@ -51,8 +51,7 @@ a {
 a:hover {
   text-decoration: underline;
 }
-code,
-.mono {
+code {
   font-family: var(--mono);
   font-size: 0.92em;
 }
@@ -615,9 +614,11 @@ figure.chart figcaption {
 .banner.bad {
   border-left-color: var(--critical, var(--serious));
 }
-.status.bad,
-#status.bad {
-  color: var(--critical, var(--serious));
+/* The interrupted-run status. It is a `.stat .value`, not a `.status`, which
+   the first version of this rule guessed wrong: the class was added and nothing
+   changed colour, so a broken run read exactly like a finished one. */
+.stat .value.bad {
+  color: var(--critical);
 }
 
 .empty {
@@ -640,6 +641,24 @@ figure.chart figcaption {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Visible on focus, so the skip link exists for the person who needs it and
+   for nobody else. */
+.sr-only.skip:focus {
+  position: fixed;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 100;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 0.9rem;
+  clip: auto;
+  clip-path: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  color: var(--ink);
 }
 
 .sr-only {

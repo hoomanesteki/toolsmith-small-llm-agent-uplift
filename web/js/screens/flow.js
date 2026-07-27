@@ -9,8 +9,9 @@
  */
 
 import { api, replay } from "../api.js";
+import { blurbs } from "../app.js";
 import { waterfall } from "../charts.js";
-import { card, chip, clear, empty, fmt, h, orientation, stat, ticker } from "../ui.js";
+import { card, chip, clear, empty, fmt, h, orientation, ticker } from "../ui.js";
 
 const NODE_ORDER = ["gate_in", "planner", "executor", "reviewer", "escalation", "gate_out", "answer"];
 
@@ -111,10 +112,19 @@ export async function flow(host) {
 
   play.click();
 
+  /* The timeline reads its ink from custom properties when it draws, so a theme
+     toggle leaves it holding the old mode's colours until something else
+     redraws it. Replaying the current selection is the cheapest correct fix. */
+  const repaint = () => play.click();
+  window.addEventListener("themechange", repaint);
+
   /* Leaving this screen with a live run open used to keep an EventSource
      pushing events into a detached DOM until the run finished. The router calls
      this before it clears the host. */
-  return () => stop?.();
+  return () => {
+    window.removeEventListener("themechange", repaint);
+    stop?.();
+  };
 }
 
 /**
@@ -285,7 +295,7 @@ function render(host, events, delay, { source, streaming = false } = {}) {
         statusEl.textContent = seen ? `interrupted after ${seen} events` : "failed to start";
         statusEl.classList.add("bad");
         drawTimeline();
-        stage.appendChild(
+        host.appendChild(
           h("div", { class: "banner bad" },
             h("span", {}, "!"),
             h("div", {},

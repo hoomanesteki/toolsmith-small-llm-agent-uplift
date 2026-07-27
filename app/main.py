@@ -202,6 +202,11 @@ def config() -> dict[str, Any]:
                 "cache_read_discount": spec.cache_read_discount,
                 "training_data_use": spec.training_data_use,
                 "verified_on": str(spec.verified_on) if spec.verified_on else None,
+                # Derived, not transcribed. Rule 3 says a model with no
+                # verification date is flagged everywhere it appears, and the
+                # only way that holds is if the flag is computed from the date
+                # rather than typed into a note beside it.
+                "unverified": spec.verified_on is None,
                 "notes": spec.notes,
             }
             for key, spec in sorted(registry.models.items())

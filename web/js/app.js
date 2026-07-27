@@ -36,6 +36,13 @@ export const blurbs = {};
    to leave nothing running. */
 let teardown = null;
 
+/* Bumped on every navigation. A screen's render is asynchronous, so clicking
+   Lab and then Review while the matrix request is still outstanding used to let
+   both finish: Review would clear the root and draw, then Lab would append its
+   own content underneath, and the URL agreed with neither. Each render checks
+   that it is still the current one before it touches the DOM. */
+let generation = 0;
+
 function current() {
   const name = window.location.pathname.replace(/^\//, "") || DEFAULT;
   return SCREENS[name] ? name : DEFAULT;
@@ -51,6 +58,7 @@ export function go(name, { push = true, params = {} } = {}) {
 }
 
 async function render(name) {
+  const mine = ++generation;
   for (const link of tabs.querySelectorAll(".tab")) {
     const selected = link.dataset.screen === name;
     link.setAttribute("aria-current", selected ? "page" : "false");
@@ -72,8 +80,16 @@ async function render(name) {
     h("div", { class: "empty" }, h("span", { class: "spinner" }), " loading"),
   );
   try {
-    teardown = (await SCREENS[name].render(root)) ?? null;
+    const stage = document.createElement("div");
+    const undo = await SCREENS[name].render(stage);
+    if (mine !== generation) {
+      undo?.();
+      return;
+    }
+    clear(root).appendChild(stage);
+    teardown = undo ?? null;
   } catch (error) {
+    if (mine !== generation) return;
     clear(root).appendChild(
       h(
         "div",

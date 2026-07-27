@@ -16,15 +16,19 @@
     />
   </head>
   <body>
+    <!-- Four tab links sit between the top of the page and the content, on
+         every screen. Without this a keyboard user tabs through all of them
+         each time they navigate. -->
+    <a class="sr-only skip" href="#screen">Skip to content</a>
     <header class="nav">
       <div class="brand">ToolSmith <small>control plane</small></div>
-      <nav id="tabs" class="tabs" role="tablist" aria-label="Screens"></nav>
+      <nav id="tabs" class="tabs" aria-label="Screens"></nav>
       <div class="nav-right">
         <span id="provenance" class="chip">checking</span>
         <button id="theme" class="btn ghost" aria-label="Switch between light and dark">Theme</button>
       </div>
     </header>
-    <main id="screen" class="screen" role="main"></main>
+    <main id="screen" class="screen" tabindex="-1"></main>
     <script type="module" src="/assets/js/app.js"></script>
     <noscript>
       <div class="screen">

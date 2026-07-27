@@ -57,62 +57,6 @@ NGRAM_THRESHOLD = 0.5
 
 _WORD = re.compile(r"[a-z0-9]+")
 
-#: Entity references: the world id scheme (CUS-1042, APT-9001, SEC-7194) plus
-#: capitalised words, which is how people and services are named in a prompt.
-_ENTITY = re.compile(r"\b[A-Z]{2,4}-\d+\b|\b[A-Z][a-z]{2,}\b")
-
-#: Words that are capitalised for grammar rather than because they name a thing.
-_SENTENCE_STARTERS = frozenset(
-    {
-        "What",
-        "Which",
-        "Who",
-        "How",
-        "When",
-        "Where",
-        "Can",
-        "Could",
-        "Look",
-        "Check",
-        "Give",
-        "Tell",
-        "For",
-        "Under",
-        "Pull",
-        "The",
-        "Please",
-        "Open",
-        "Log",
-        "Rank",
-        "Count",
-        "Process",
-        "Before",
-        "Make",
-        "There",
-        "Summarise",
-        "According",
-        "Raise",
-        "Show",
-        "Find",
-        "Is",
-        "Are",
-        "Do",
-        "Go",
-        "Of",
-        "This",
-        "That",
-        "Note",
-        "Cite",
-        "Reviewed",
-    }
-)
-
-
-def entity_refs(text: str) -> frozenset[str]:
-    """Which specific things a prompt is about."""
-    return frozenset(m for m in _ENTITY.findall(text) if m not in _SENTENCE_STARTERS)
-
-
 #: Splits that must not overlap. Train may look like train.
 LEAK_PAIRS: tuple[tuple[str, str], ...] = (
     ("train", "test"),

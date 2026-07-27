@@ -92,6 +92,13 @@ produced it, which oracle program defined its ground truth, which seed built the
 database that oracle ran against, and which configuration was in force.
 Append-only matters: a lineage file you can rewrite proves nothing.
 
+One honest caveat. The log, the traversal and the append-only guarantee are
+implemented and tested; the pipeline does not yet write to them. Every fact the
+graph would carry is recoverable today from the provenance record stamped on
+each row, which is written on every run. The graph would turn that walk from a
+join into a lookup. It is listed here as built rather than as running, because
+the distinction is the sort of thing this page exists to keep straight.
+
 ## The budget, enforced rather than intended
 
 `CostLedger.check_affordable` runs **before** every live request and raises if
@@ -119,7 +126,7 @@ the process.
 | Job | What it does |
 |---|---|
 | `quality` | ruff format, ruff lint, mypy |
-| `test` | 334 tests on two operating systems and two Python versions |
+| `test` | 351 tests on two operating systems and two Python versions |
 | `gates` | the five governance gates above |
 | `reproduce` | the whole pipeline end to end, then asserts the committed artifacts are byte-identical to a fresh run |
 | `drift` | weekly, checks every declared model against the provider's live catalogue and opens an issue on drift |
