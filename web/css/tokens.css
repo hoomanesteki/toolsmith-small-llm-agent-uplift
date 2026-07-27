@@ -1,0 +1,208 @@
+/* ============================================================================
+   Design tokens.
+
+   The look is Apple-adjacent by restraint rather than by imitation. Three
+   decisions carry most of it, and each is here rather than sprinkled through
+   the components:
+
+   1. OKLCH, not hex, for the interface. Lightness moves without hue shifting,
+      so a hover state is genuinely one step brighter rather than slightly
+      greener. Dark mode lifts to L 0.145 instead of dropping to pure black,
+      and accents GAIN chroma there rather than losing it, which is what stops
+      a dark UI reading as grey.
+
+   2. Tracking is negative and grows more negative with size. This is the
+      single most recognisable typographic property of Apple's interface, and
+      it costs one line per step.
+
+   3. Glass appears on the navigation layer only. Apple's own guidance
+      restricts it that way; content-layer glass and glass-on-glass are what
+      make imitations read as cheap. There is no refraction here at all: the
+      SVG-displacement approach is broken in Safari and buys nothing that a
+      saturated blur and a half-pixel top highlight do not.
+
+   The CHART colours are a separate, validated system and are deliberately not
+   OKLCH-derived: they come from a palette checked with a CVD validator in both
+   modes, and re-deriving them here would break that guarantee.
+   ========================================================================= */
+
+:root {
+  color-scheme: light;
+
+  /* -- surfaces ---------------------------------------------------------- */
+  --plane: oklch(0.985 0.002 95);
+  --surface: oklch(1 0 0);
+  --surface-raised: oklch(0.995 0.001 95);
+  --surface-sunken: oklch(0.965 0.003 95);
+  --surface-glass: oklch(1 0 0 / 0.72);
+
+  /* -- ink --------------------------------------------------------------- */
+  --ink: oklch(0.19 0.004 285);
+  --ink-secondary: oklch(0.44 0.006 285);
+  --ink-muted: oklch(0.60 0.006 285);
+  --ink-faint: oklch(0.72 0.005 285);
+
+  /* -- lines ------------------------------------------------------------- */
+  --hairline: oklch(0.90 0.004 285);
+  --hairline-strong: oklch(0.84 0.005 285);
+  --focus-ring: oklch(0.62 0.19 258 / 0.55);
+
+  /* -- accent ------------------------------------------------------------ */
+  --accent: oklch(0.56 0.17 258);
+  --accent-hover: oklch(0.50 0.18 258);
+  --accent-wash: oklch(0.56 0.17 258 / 0.10);
+  --accent-ink: oklch(1 0 0);
+
+  /* -- status (icon + label always; never colour alone) ------------------ */
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  /* -- chart surface + validated categorical slots (light) --------------- */
+  --chart-surface: #fcfcfb;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  --chart-ink: #0b0b0b;
+  --chart-ink-2: #52514e;
+  --chart-muted: #898781;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --seq-100: #cde2fb;
+  --seq-250: #86b6ef;
+  --seq-400: #3987e5;
+  --seq-550: #1c5cab;
+  --seq-700: #0d366b;
+
+  /* -- type -------------------------------------------------------------- */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  --size-hero: 3.25rem;
+  --size-display: 2rem;
+  --size-title: 1.3125rem;
+  --size-body: 0.9375rem;
+  --size-small: 0.8125rem;
+  --size-micro: 0.6875rem;
+
+  /* Tracking tightens as size grows. The whole trick, in five lines. */
+  --track-hero: -0.035em;
+  --track-display: -0.025em;
+  --track-title: -0.017em;
+  --track-body: -0.008em;
+  --track-micro: 0.02em;
+
+  /* -- space ------------------------------------------------------------- */
+  --r-sm: 7px;
+  --r-md: 11px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  --shadow-1: 0 1px 2px oklch(0.2 0.01 285 / 0.06), 0 1px 1px oklch(0.2 0.01 285 / 0.04);
+  --shadow-2: 0 4px 16px oklch(0.2 0.01 285 / 0.07), 0 1px 3px oklch(0.2 0.01 285 / 0.05);
+  --shadow-3: 0 18px 48px oklch(0.2 0.01 285 / 0.13), 0 2px 8px oklch(0.2 0.01 285 / 0.06);
+
+  /* Springs, not eases. Motion is the other half of the feel. */
+  --spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring-soft: cubic-bezier(0.34, 1.24, 0.64, 1);
+  --fast: 130ms;
+  --base: 240ms;
+  --slow: 420ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+
+    /* Lifted, not black. Pure black makes every edge a hard cut. */
+    --plane: oklch(0.145 0.004 285);
+    --surface: oklch(0.185 0.005 285);
+    --surface-raised: oklch(0.215 0.006 285);
+    --surface-sunken: oklch(0.125 0.004 285);
+    --surface-glass: oklch(0.185 0.005 285 / 0.72);
+
+    --ink: oklch(0.97 0.002 285);
+    --ink-secondary: oklch(0.76 0.005 285);
+    --ink-muted: oklch(0.60 0.006 285);
+    --ink-faint: oklch(0.46 0.006 285);
+
+    --hairline: oklch(0.29 0.006 285);
+    --hairline-strong: oklch(0.37 0.008 285);
+
+    /* Accents GAIN chroma in the dark. This is what stops it reading grey. */
+    --accent: oklch(0.68 0.20 258);
+    --accent-hover: oklch(0.74 0.21 258);
+    --accent-wash: oklch(0.68 0.20 258 / 0.16);
+    --accent-ink: oklch(0.145 0.004 285);
+
+    --chart-surface: #141416;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
+    --chart-ink: #ffffff;
+    --chart-ink-2: #c3c2b7;
+    --chart-muted: #898781;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --seq-100: #0d366b;
+    --seq-250: #184f95;
+    --seq-400: #2a78d6;
+    --seq-550: #5598e7;
+    --seq-700: #9ec5f4;
+
+    --shadow-1: 0 1px 2px oklch(0 0 0 / 0.34);
+    --shadow-2: 0 4px 16px oklch(0 0 0 / 0.42);
+    --shadow-3: 0 18px 48px oklch(0 0 0 / 0.55);
+  }
+}
+
+/* The toggle wins in both directions. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plane: oklch(0.145 0.004 285);
+  --surface: oklch(0.185 0.005 285);
+  --surface-raised: oklch(0.215 0.006 285);
+  --surface-sunken: oklch(0.125 0.004 285);
+  --surface-glass: oklch(0.185 0.005 285 / 0.72);
+  --ink: oklch(0.97 0.002 285);
+  --ink-secondary: oklch(0.76 0.005 285);
+  --ink-muted: oklch(0.60 0.006 285);
+  --ink-faint: oklch(0.46 0.006 285);
+  --hairline: oklch(0.29 0.006 285);
+  --hairline-strong: oklch(0.37 0.008 285);
+  --accent: oklch(0.68 0.20 258);
+  --accent-hover: oklch(0.74 0.21 258);
+  --accent-wash: oklch(0.68 0.20 258 / 0.16);
+  --accent-ink: oklch(0.145 0.004 285);
+  --chart-surface: #141416;
+  --chart-grid: #2c2c2a;
+  --chart-axis: #383835;
+  --chart-ink: #ffffff;
+  --chart-ink-2: #c3c2b7;
+  --chart-muted: #898781;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --seq-100: #0d366b;
+  --seq-250: #184f95;
+  --seq-400: #2a78d6;
+  --seq-550: #5598e7;
+  --seq-700: #9ec5f4;
+  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.34);
+  --shadow-2: 0 4px 16px oklch(0 0 0 / 0.42);
+  --shadow-3: 0 18px 48px oklch(0 0 0 / 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
