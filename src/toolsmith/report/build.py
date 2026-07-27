@@ -493,6 +493,38 @@ def build(generated: Path | None = None, data: Path | None = None) -> dict[str, 
             table=headline_table(ctx),
         ),
     )
+    # The failures page ranked ten transcripts and drew nothing. A reader could
+    # see which run lost and not the shape of how the system loses, which is the
+    # more useful of the two and the one the page is named after.
+    modes: dict[str, int] = {}
+    for score in ctx.scores:
+        if score.passed or score.trial != 0:
+            continue
+        for mode in score.failure_modes:
+            modes[mode] = modes.get(mode, 0) + 1
+    if modes:
+        ranked = sorted(modes.items(), key=lambda kv: -kv[1])[:12]
+        write(
+            "failure-modes.html",
+            charts.bars(
+                [
+                    charts.Bar(label=name.replace("_", " "), value=float(count))
+                    for name, count in ranked
+                ],
+                digits=0,
+                caption=(
+                    "Named causes across every failing run in the matrix, all configurations "
+                    "pooled. The long tail is wrong parameters and inefficient trajectories, "
+                    "which are cheap to fix. The short head is the expensive kind."
+                ),
+                table=_md_table(
+                    ["Failure mode", "# Runs"],
+                    [[n.replace("_", " "), str(c)] for n, c in ranked],
+                    ["left", "right"],
+                ),
+            ),
+        )
+
     write(
         "quality-bars.html",
         charts.bars(

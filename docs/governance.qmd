@@ -67,8 +67,20 @@ Every dataset row, trajectory and judgment carries a provenance record:
 `created_at`, `seed`, and the content hashes of its parents. The parents build
 an append-only lineage DAG:
 
-```
-world seed -> task -> oracle -> trajectory -> gate verdict -> run -> metric
+```{mermaid}
+%%| label: fig-lineage
+%%| fig-cap: "The lineage of one published number. Every edge is a recorded parent hash, so the walk backwards is a lookup rather than a reconstruction."
+flowchart LR
+  S([World seed]) --> W(World)
+  W --> T(Task)
+  T --> O(Oracle program)
+  O --> GT(Ground truth)
+  W --> TR(Trajectory)
+  T --> TR
+  TR --> GV(Gate verdicts)
+  GT --> RUN(Run)
+  GV --> RUN
+  RUN --> M([Published metric])
 ```
 
 Reading it backwards from a cell in the results table tells you which task
