@@ -1,0 +1,177 @@
+---
+title: "Which model should run which part of your agent?"
+subtitle: "A control plane that answers it with receipts, for under twenty dollars."
+---
+
+::: {.lede}
+You cannot buy a frontier model for every step of an agent. You also cannot
+trust a cheap one without proof. This is the harness that decides, per role and
+per task, which model to use, and then shows its working in dollars,
+milliseconds, and failure transcripts.
+:::
+
+## The 30-second version
+
+Pick an agent task. It needs a planner, an executor that loops, and a reviewer.
+The obvious move is to put a frontier model on the ends and something cheap in
+the middle, because the ends are short calls and the middle is where the tokens
+go.
+
+That obvious move is the worst of the fifteen configurations measured here, and
+the reason is arithmetic rather than taste. The executor is the only role that
+runs **N** times, so its per-step reliability is raised to the Nth power. Put
+your weakest model in the exponent and you have put it in the worst place
+available.
+
+::: {.stat-row}
+::: {.tile}
+::: {.k}
+The intuitive split
+:::
+::: {.v}
+0.639
+:::
+::: {.s}
+pass@1, at $0.02741 per success
+:::
+:::
+::: {.tile}
+::: {.k}
+A cascade instead
+:::
+::: {.v}
+0.956
+:::
+::: {.s}
+pass@1, at $0.01464 per success
+:::
+:::
+::: {.tile}
+::: {.k}
+All frontier
+:::
+::: {.v}
+0.950
+:::
+::: {.s}
+pass@1, at $0.05242 per success
+:::
+:::
+::: {.tile}
+::: {.k}
+Real money spent
+:::
+::: {.v}
+$0.00
+:::
+::: {.s}
+of a $20 cap, enforced in code
+:::
+:::
+:::
+
+The cascade matches the all-frontier row's quality at **0.28x** its cost per
+success, and beats the intuitive split on both axes at once. That is the
+finding. The rest of this site is how it was measured and where it fails.
+
+## What is actually here
+
+{{< include _generated/key-numbers.md >}}
+
+::: {.callout-provenance}
+**Provenance.**
+Every number on this site was produced by the production code path over a
+deterministic behavioural simulator, seeded from published model-card priors.
+No API call was made and nothing was spent. The simulator is a *provider*, not
+a test fixture: the executor loop, the gates, the cascade, the ledger, the
+statistics and this report are the code that would run live. Adding a key and
+running `--provider live` regenerates every table here for real, through the
+identical path. See [ADR 0001](adr/0001-a-deterministic-simulator-is-a-first-class-provider.md)
+for why that trade was made and what it costs the reader.
+:::
+
+## The cost-quality frontier
+
+{{< include _generated/pareto.html >}}
+
+## The three things worth taking away
+
+::: {.finding}
+::: {.tag}
+Finding 1
+:::
+### Input tokens are 82% of the bill, and nobody optimises them
+
+Output tokens are what people price a model on. Input is what they actually
+buy. The executor re-reads its whole transcript every turn, so input grows with
+the square of the turn count while output grows linearly.
+
+The lever is therefore context, not generation. Retrieving tool schemas through
+a `search_tools` meta-tool instead of inlining all twelve cuts input by **48%
+per task** at no measurable cost in accuracy, which is a 23% reduction in
+dollars per success for an afternoon of engineering and no tokens.
+:::
+
+::: {.finding}
+::: {.tag}
+Finding 2
+:::
+### The executor is the only role whose errors compound, so it is the wrong place to economise
+
+A model with per-step reliability *q* completes an N-step trajectory cleanly at
+roughly *q^N*. The planner and the reviewer are single shots. Measured here: a
+cheap executor passes 75% of one-step tasks and 54% of two-step ones, tracking
+*q²* almost exactly, while a frontier executor barely moves.
+
+This inverts the usual intuition. The planner is cheap to upgrade **because it
+runs once**, not because its input is cheap.
+:::
+
+::: {.finding}
+::: {.tag}
+Finding 3
+:::
+### Escalation is a second independent attempt, and it is worth 18 points
+
+Removing escalation from the cascade, changing nothing else, costs **18.3
+points of pass@1** at identical token cost. Two attempts beat one even when the
+first is weaker, which is why a cascade can approach and sometimes exceed the
+success rate of running the frontier model everywhere.
+
+The variable that governs it is not the executor's accuracy but the verifier's
+**detection rate**: escalation only fires on what the verifier noticed.
+:::
+
+## And one where the source spec was wrong
+
+The design document this project was built from predicted the executor at 73% of
+spend and the planner at 9%, on a six-turn loop. At the 2.4 turns these tasks
+actually take, the planner's single frontier call is **48%** of cascade spend
+and the executor 30%.
+
+The claim is turn-count dependent, and the spec did not say so. It is reported
+here rather than smoothed over, because a harness that only confirms its own
+brief is not a harness.
+
+## How to check any of this
+
+```bash
+git clone https://github.com/hoomanesteki/toolsmith-small-llm-agent-uplift
+cd toolsmith-small-llm-agent-uplift
+uv sync --all-extras
+make all          # worlds, tasks, matrix, report, site: about six minutes, $0
+```
+
+No API keys, no network beyond the package index. Every table on this site is
+written by `toolsmith report build` from `eval/results/results.jsonl`, and CI
+fails if a fresh run produces different bytes.
+
+To see it move rather than read about it:
+
+```bash
+make serve        # http://127.0.0.1:7860
+```
+
+Four screens: the comparison surface, one run watched frame by frame, an
+interactive chat where the model selector changes the whole pipeline, and the
+human-in-the-loop review queue.

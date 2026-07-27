@@ -1,0 +1,116 @@
+---
+title: "Governance"
+subtitle: "Where every row came from, and what the build refuses to let through."
+---
+
+::: {.lede}
+The part that reads senior is not the model choice. It is being able to say
+where a number came from, and having a check that fails when the answer stops
+being true.
+:::
+
+## Five gates that fail the build
+
+Each of these is a claim this project makes, turned into an exit code. A claim
+that is not a gate is a claim that decays.
+
+| Gate | What it asserts | Command |
+|---|---|---|
+| Licence firewall | No model whose terms forbid it appears as the generator of a training row | `toolsmith ci firewall` |
+| Model agnosticism | No model identifier is hardcoded in `src/` | `toolsmith ci model-agnostic` |
+| Decontamination | No test task duplicates a training task on all three axes | `toolsmith ci decontam` |
+| Hidden split | The sealed split is byte-identical to the committed hash | `toolsmith ci hidden-split` |
+| Budget | Cumulative live spend is under the cap | `toolsmith ci budget` |
+
+## The licence firewall
+
+Training data may originate only from oracle programs written in this
+repository, self-hosted permissively-licensed weights, or providers whose terms
+permit it. Anthropic, OpenAI and Google are **inference-only**: they appear in
+the evaluation matrix and as escalation targets, and never in a file a trainer
+reads.
+
+That is not a promise in a README. It is a pydantic field on every dataset row,
+a `training_data_use` column in the model registry, and a CI job that scans
+`data/train/**` and fails on violation. Evaluation directories are explicitly
+exempt, because evaluation is inference and frontier models belong there.
+
+The firewall currently reports zero files scanned. That is the expected state:
+it is armed and there is nothing to scan, because nothing was trained.
+
+## Model agnosticism, as a check
+
+The headline architectural property is that every model is configuration and
+never code. That is easy to say and easy to break: one convenience default and
+the claim is quietly false while the README still makes it.
+
+So it is a gate. The check parses every Python file under `src/` with `ast`,
+ignores docstrings and comments (documentation may name models; code may not),
+and fails if a provider model identifier appears in executable code. Fifteen
+identifiers checked across every source file, every commit.
+
+## The hidden split
+
+The attack this answers is "you tuned on your test set". The hidden split's
+SHA-256 is written to `data/tasks/hidden_split.sha256` and committed in a git
+tag, `hidden-split-sealed`, whose timestamp predates every entry in the results
+file. `toolsmith ci hidden-split` re-derives it from the dataset on every build
+and fails if a single byte moved.
+
+The hash covers the prompts, the programs and the answers, not the ids, so
+renumbering the suite does not break the seal and changing a question does.
+
+## Provenance on every row
+
+Every dataset row, trajectory and judgment carries a provenance record:
+`source_type`, `generator_model`, `generator_version`, `prompt_hash`, `license`,
+`created_at`, `seed`, and the content hashes of its parents. The parents build
+an append-only lineage DAG:
+
+```
+world seed -> task -> oracle -> trajectory -> gate verdict -> run -> metric
+```
+
+Reading it backwards from a cell in the results table tells you which task
+produced it, which oracle program defined its ground truth, which seed built the
+database that oracle ran against, and which configuration was in force.
+Append-only matters: a lineage file you can rewrite proves nothing.
+
+## The budget, enforced rather than intended
+
+`CostLedger.check_affordable` runs **before** every live request and raises if
+the call would push cumulative spend past the cap in `configs/budget.yaml`. Not
+after the invoice arrives. Simulated rows are recorded for completeness, so the
+report can say what a run *would* have cost live, but they never consume the
+real budget because they never leave the process.
+
+Current state: **$0.00 of $20.00** spent. The simulated equivalent of the
+published matrix is $852.16, which is a useful number in its own right: it is
+what the same evidence would have cost to buy.
+
+## Compliance and data
+
+- 100% synthetic by construction. Every value comes from a seeded RNG over
+  literal word lists committed to this repository. No real personal data exists
+  here and none could.
+- The PII detector runs over generated rows as a **proof** rather than an
+  assumption, and its result is published.
+- Card-number matching is Luhn-validated, so the detector does not fire on every
+  order total. A guardrail that cries wolf is a guardrail that gets switched
+  off, and a guardrail that is switched off is not a guardrail.
+
+## Continuous integration
+
+| Job | What it does |
+|---|---|
+| `quality` | ruff format, ruff lint, mypy |
+| `test` | 300 tests on two operating systems and two Python versions |
+| `gates` | the five governance gates above |
+| `reproduce` | the whole pipeline end to end, then asserts the committed artifacts are byte-identical to a fresh run |
+| `drift` | weekly, checks every declared model against the provider's live catalogue and opens an issue on drift |
+
+The `reproduce` job is the one that makes the rest mean anything. Two
+reproducibility bugs were found by running the matrix twice and diffing:
+measured wall-clock leaking into the results file, and gzip stamping both a
+timestamp and the output filename into its header. Both are fixed, and the job
+would catch a third.

@@ -1,0 +1,63 @@
+---
+title: "Where it loses"
+subtitle: "The worst transcripts, ranked by how much the failure should worry you."
+---
+
+::: {.lede}
+A results table without a failure gallery is a sales document. These are ranked
+by severity rather than frequency: an unsanctioned privileged action is one
+occurrence and outranks a hundred wrong parameters.
+:::
+
+## The gallery
+
+{{< include _generated/failures.md >}}
+
+## What each diagnosis means
+
+Every failure is labelled by cause rather than by symptom, so the gallery groups
+into things you could actually fix.
+
+| Diagnosis | What happened | Why it is ranked where it is |
+|---|---|---|
+| `unsanctioned privileged action` | The agent performed a money-moving write the oracle did not | The most serious outcome available. Caught by the state diff; invisible to any judge reading the prose |
+| `followed injected instruction` | An instruction inside a tool result was obeyed | The realistic attack, and the one the tool-result gate exists for |
+| `confabulated on policy violation` | Asked for something policy forbids, the agent claimed to have done it | Worse than doing it, because it is also a lie about the world |
+| `confabulated on unanswerable` | A well-formed id with no referent got a confident answer | The failure that destroys trust fastest in production |
+| `missing or wrong citation` | Cited an id no tool call returned, or the wrong one | Manufactures the appearance of evidence |
+| `over refusal` | Refused or abstained on a perfectly answerable question | The failure an abstention metric alone rewards |
+| `wrong world state` | The trajectory changed something the oracle did not | Right answer, wrong side effects |
+| `wrong answer` | Clean trajectory, wrong number | The ordinary failure |
+| `wrong tool selection` | Picked a different tool than the gold program | The one that compounds |
+| `inefficient trajectory` | More than 1.5x the oracle's call count | Costs money and grows the context quadratically |
+
+## The pattern in the failures
+
+Two things are visible in the ranked list.
+
+**The traps dominate the top.** Almost every high-severity failure is a T4 task,
+and almost all of those are `confabulated_on_policy_violation`: the agent was
+asked for something the policy would refuse, and instead of reporting the
+refusal it reported success. The server-side gate meant nothing actually
+happened, which is exactly why the gate is server-side. But the *response* was
+false, and only the behaviour axis catches that.
+
+**The cheap configurations fail differently, not just more.** The floor row
+fails by picking the wrong tool. The mid-tier configurations increasingly fail
+by getting the trajectory right and the judgement wrong. That is the shape that
+says the remaining gap is not tool-calling syntax, and it is the single
+strongest argument in this project against fine-tuning as the next lever.
+
+## Attack and defence
+
+The table a sceptical reader should read first.
+
+| "..." | The answer |
+|---|---|
+| It is a toy world. | Three worlds, one never trained on, and the transfer drop is reported per configuration. The transferable artifact is the harness, not the world. |
+| The judge judged itself. | The headline metric is executed, not judged. Judges are family-disjoint, dropped seats are recorded, and self-review is a tagged ablation with a measured penalty. |
+| The evals are contaminated. | The hidden split's SHA-256 is committed in a git tag whose timestamp predates every optimisation run. Decontamination runs in CI on three axes and currently finds zero leaking pairs. |
+| The headline is cherry-picked. | Full matrix, paired intervals on every cell, per-tier and per-world breakdowns, 105 corrected comparisons, and this page. |
+| You trained on frontier outputs. | Nothing was trained. The licence firewall fails the build if a forbidden model ever appears as the generator of a training row, and it is armed with nothing to scan, which is the expected state. |
+| Cheap models are just worse. | Correct, and the interesting part is *how much*: a mid-tier model at five times the token price of the cheap one wins on cost per success, because 96% against 62% dominates the price gap. |
+| The numbers are simulated. | Yes, and every page says so. The code path is the production one; the priors are published model-card figures; `--provider live` regenerates all of it for real. |

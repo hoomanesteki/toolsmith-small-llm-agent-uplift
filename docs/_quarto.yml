@@ -1,0 +1,81 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "*.qmd"
+    - "cards/*.qmd"
+    - "adr/*.md"
+    - "!_generated/"
+
+website:
+  title: "ToolSmith"
+  description: >-
+    Which model should run which part of your agent? A control plane that routes
+    planner, executor and reviewer across frontier and open models, verifies every
+    step against executable ground truth, and publishes the cost-versus-quality
+    frontier with confidence intervals and the losing transcripts attached.
+  site-url: "https://hoomanesteki.github.io/toolsmith-small-llm-agent-uplift/"
+  repo-url: "https://github.com/hoomanesteki/toolsmith-small-llm-agent-uplift"
+  repo-actions: [source, issue]
+  favicon: favicon.svg
+  navbar:
+    background: light
+    left:
+      - href: index.qmd
+        text: The question
+      - href: findings.qmd
+        text: Findings
+      - href: results.qmd
+        text: Results
+      - href: method.qmd
+        text: Method
+      - href: failures.qmd
+        text: Where it loses
+      - href: governance.qmd
+        text: Governance
+    right:
+      - icon: github
+        href: "https://github.com/hoomanesteki/toolsmith-small-llm-agent-uplift"
+        aria-label: Source
+  sidebar:
+    style: floating
+    collapse-level: 2
+    contents:
+      - index.qmd
+      - findings.qmd
+      - results.qmd
+      - method.qmd
+      - failures.qmd
+      - governance.qmd
+      - section: "Cards"
+        contents:
+          - cards/model-card.qmd
+          - cards/dataset-card.qmd
+      - section: "Decisions"
+        contents:
+          - adr/0001-a-deterministic-simulator-is-a-first-class-provider.md
+  page-footer:
+    left: "Built by Hooman Esteki. Every number regenerable with one command."
+    right: "MIT licensed."
+
+format:
+  html:
+    theme:
+      light: [cosmo, theme.scss]
+      dark: [darkly, theme.scss]
+    toc: true
+    toc-depth: 3
+    toc-title: "On this page"
+    code-copy: true
+    code-overflow: wrap
+    link-external-newwindow: true
+    anchor-sections: true
+    fig-responsive: true
+    grid:
+      sidebar-width: 250px
+      body-width: 900px
+      margin-width: 220px
+
+execute:
+  freeze: false
+  echo: false
