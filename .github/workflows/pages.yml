@@ -84,7 +84,7 @@ jobs:
 
       # Always keep the rendered site downloadable, so the report is reachable
       # from the run even when it has nowhere to publish to.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: report-site
           path: docs/_site

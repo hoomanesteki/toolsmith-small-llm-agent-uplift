@@ -80,7 +80,7 @@ jobs:
         run: uv run pytest --cov --cov-report=xml --cov-report=term-missing
       - name: Upload coverage
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage.xml
@@ -190,7 +190,7 @@ jobs:
       - name: Verify the zero-key demo works on a fresh checkout
         run: uv run toolsmith demo --run
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: eval-artifacts
           path: |
