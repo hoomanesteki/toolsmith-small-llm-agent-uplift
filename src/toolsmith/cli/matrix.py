@@ -92,7 +92,13 @@ def run(
     frontier = set(pareto_frontier(rows))
     for row in rows:
         row.on_pareto_frontier = row.pipeline in frontier
-    comparisons = compare_all(result.scores, seed=seed, prefer=names)
+    # Declaration order, not `names`, which is sorted. When two rows are
+    # indistinguishable the survivor is the one listed first in
+    # `matrix.yaml`, which puts a baseline ahead of the ablations derived
+    # from it. Passing the sorted list here kept `ablation_no_compaction`
+    # and threw away `cascade_default`, the recommended cascade that two
+    # sections of the findings page are built on.
+    comparisons = compare_all(result.scores, seed=seed, prefer=list(registry.pipelines))
 
     _print_headline(rows)
     _print_safety(rows)

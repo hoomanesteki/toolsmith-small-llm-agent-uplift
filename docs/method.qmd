@@ -48,9 +48,14 @@ test.
 
 Every task carries an **oracle program**: the exact gold call sequence. The
 generator executes it in a fresh sandbox and keeps the task only if the
-execution agrees with what the template claimed. The rejection rate is published
-rather than hidden, because a generator with a silent invalid rate is a
-generator whose numbers mean nothing.
+execution agrees with what the template claimed. The rejection rate is written
+into `data/tasks/summary.json` on every build rather than left unrecorded,
+because a generator with a silent invalid rate is a generator whose numbers mean
+nothing. It currently reads zero of 7,756, which is worth stating plainly: the
+templates and the oracle programs are written together, so this catches
+transcription mistakes rather than modelling ones. A generator that rejects
+nothing is either very careful or not checking, and the only way to tell is that
+the field exists and is regenerated.
 
 ### T4 is the tier that matters
 
@@ -161,7 +166,11 @@ into issuing a refund still does not get one.
 ### Where judges belong
 
 Three seats, family-disjoint from the system under test, majority vote,
-disagreements retained and queued for human review. A seat that shares a family
+disagreements retained and queued for human review. Which three is a `panels:`
+entry in `configs/rubrics/`, next to the rubric they grade against, because a
+panel and a rubric are two halves of one decision: what is being asked, and who
+is being asked it. They lived in a Python tuple until the agnosticism gate was
+widened enough to notice. A seat that shares a family
 with a model under test is dropped and the drop is recorded on the row.
 Judgments are content-cached, so re-running the matrix after a code change costs
 nothing in judge tokens.

@@ -46,8 +46,12 @@ the claim is quietly false while the README still makes it.
 
 So it is a gate. The check parses every Python file under `src/` with `ast`,
 ignores docstrings and comments (documentation may name models; code may not),
-and fails if a provider model identifier appears in executable code. Fifteen
-identifiers checked across every source file, every commit.
+and fails if a model identifier appears in executable code. Twenty-eight
+identifiers, because `models.yaml` gives every model two names: the key this
+repository uses, `groq-oss-120b`, and the string the vendor answers to,
+`openai/gpt-oss-120b`. The gate checked only the second for a while, and a judge
+panel written with the first sat in `harness/judges.py` scoring zero offences.
+Both are portability leaks. Code that spells either one has picked a model.
 
 ## The hidden split
 
@@ -115,7 +119,7 @@ the process.
 | Job | What it does |
 |---|---|
 | `quality` | ruff format, ruff lint, mypy |
-| `test` | 333 tests on two operating systems and two Python versions |
+| `test` | 334 tests on two operating systems and two Python versions |
 | `gates` | the five governance gates above |
 | `reproduce` | the whole pipeline end to end, then asserts the committed artifacts are byte-identical to a fresh run |
 | `drift` | weekly, checks every declared model against the provider's live catalogue and opens an issue on drift |

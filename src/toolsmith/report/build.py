@@ -514,8 +514,10 @@ def build(generated: Path | None = None, data: Path | None = None) -> dict[str, 
                 digits=0,
                 caption=(
                     "Named causes across every failing run in the matrix, all configurations "
-                    "pooled. The long tail is wrong parameters and inefficient trajectories, "
-                    "which are cheap to fix. The short head is the expensive kind."
+                    "pooled, most frequent first. The head is ordinary wrongness: a bad "
+                    "answer, the wrong tool, bad arguments. The tail holds the failures "
+                    "that would matter in production, and it is thin, which is the useful "
+                    "thing this chart says and the thing a severity ranking cannot."
                 ),
                 table=_md_table(
                     ["Failure mode", "# Runs"],
