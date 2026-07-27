@@ -7,11 +7,13 @@
  */
 
 import { api } from "../api.js";
-import { card, chip, clear, empty, fmt, h, stat } from "../ui.js";
+import { blurbs, go } from "../app.js";
+import { card, chip, clear, empty, fmt, h, orientation, stat } from "../ui.js";
 
 export async function review(host) {
   clear(host);
   host.appendChild(h("h1", {}, "What needs a person"));
+  host.appendChild(orientation(blurbs.review));
   host.appendChild(
     h("p", { class: "lede", html:
       "Contested judgments first. Where the panel splits, a human label changes the calibration; where it agrees, " +
@@ -19,10 +21,11 @@ export async function review(host) {
       "the failure should worry you rather than by how often it happens." }),
   );
 
-  const [queue, calibration, gallery] = await Promise.all([
+  const [queue, calibration, gallery, traces] = await Promise.all([
     api.reviewQueue(60).catch(() => ({ total: 0, queue: [] })),
     api.calibration().catch(() => null),
     api.gallery(12).catch(() => ({ total: 0, failures: [] })),
+    api.traces().catch(() => ({ traces: [] })),
   ]);
 
   host.appendChild(h("div", { class: "grid", style: { marginBottom: "1.4rem" } },
@@ -39,16 +42,33 @@ export async function review(host) {
 
   /* -- the gallery -------------------------------------------------------- */
   if (gallery.failures.length) {
-    const rows = gallery.failures.map((f) =>
-      h("tr", {},
-        h("td", {}, h("div", {}, h("b", {}, f.task_id)), h("div", { class: "hint" }, f.prompt.slice(0, 90))),
+    /* A failure you cannot open is a claim, not evidence. Rows whose trace was
+       kept link straight into Flow with that run selected; the rest stay plain
+       text rather than becoming a link that goes nowhere. */
+    const recorded = new Set(traces.traces.map((t) => t.run_id));
+    const rows = gallery.failures.map((f) => {
+      const runId = `${f.pipeline}:${f.task_id}:0`;
+      const title = recorded.has(runId)
+        ? h("a", {
+            href: `/flow?run=${encodeURIComponent(runId)}`,
+            title: "Watch this run stage by stage",
+            onclick: (event) => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+              event.preventDefault();
+              go("flow", { params: { run: runId } });
+            },
+          }, h("b", {}, f.task_id))
+        : h("b", {}, f.task_id);
+      return h("tr", {},
+        h("td", {}, h("div", {}, title), h("div", { class: "hint" }, f.prompt.slice(0, 90))),
         h("td", {}, f.pipeline),
         h("td", {}, f.tier),
         h("td", {}, h("div", { class: "row", style: { margin: 0, gap: "0.3rem" } },
           ...f.failure_modes.slice(0, 3).map((m) => chip(m.replace(/_/g, " "), f.severity >= 70 ? "bad" : "warn")))),
         h("td", { class: "num" }, `${f.calls_made}/${f.calls_oracle}`),
         h("td", { class: "num" }, fmt.usd(f.usd)),
-      ));
+      );
+    });
     host.appendChild(card(
       "Where it loses",
       "An unsanctioned privileged action is one occurrence and outranks a hundred wrong parameters, so this list is ordered by severity.",
@@ -61,7 +81,13 @@ export async function review(host) {
 
   /* -- the labelling queue ------------------------------------------------ */
   if (!queue.queue?.length) {
-    host.appendChild(empty("No judgments yet. Run `uv run toolsmith matrix run` with the judge panel enabled."));
+    host.appendChild(
+      empty(
+        "No judgments yet. Run ",
+        h("code", {}, "uv run toolsmith matrix run"),
+        " with the judge panel enabled.",
+      ),
+    );
     return;
   }
 

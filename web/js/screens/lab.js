@@ -7,7 +7,8 @@
 
 import { api } from "../api.js";
 import { barChart, paretoChart, stackedBar } from "../charts.js";
-import { card, chip, clear, empty, fmt, h, stat } from "../ui.js";
+import { blurbs, go } from "../app.js";
+import { card, chip, clear, empty, fmt, h, orientation, stat } from "../ui.js";
 
 const TIER_ORDER = ["T1", "T2", "T3", "T4", "T5"];
 
@@ -18,7 +19,11 @@ export async function lab(host) {
     payload = await api.matrix();
   } catch (error) {
     host.appendChild(
-      empty(`No results yet. Run \`uv run toolsmith matrix run\` to produce them. (${error.message})`),
+      empty(
+        "No results yet. Run ",
+        h("code", {}, "uv run toolsmith matrix run"),
+        ` to produce them. (${error.message})`,
+      ),
     );
     return;
   }
@@ -32,6 +37,7 @@ export async function lab(host) {
 
 
   host.appendChild(h("h1", {}, "Cost versus quality, with receipts"));
+  host.appendChild(orientation(blurbs.lab));
   host.appendChild(
     h(
       "p",
@@ -69,6 +75,7 @@ export async function lab(host) {
     (a, b) => b.pass_at_1.estimate - a.pass_at_1.estimate,
   )[0];
   const cheapest = [...frontier].sort((a, b) => a.usd_per_success - b.usd_per_success)[0];
+  const recommended = rows.find((r) => (r.tags ?? []).includes("recommended"));
   const relative = best && reference ? best.usd_per_success / reference.usd_per_success : null;
   // Open on the configuration the page is arguing for.
   let selected = best?.pipeline ?? rows[0]?.pipeline;
@@ -82,6 +89,12 @@ export async function lab(host) {
       card(null, null, stat("Input share of tokens", fmt.pct(rows.reduce((a, r) => a + r.input_share, 0) / rows.length, 0), "everyone optimises the other tenth")),
       card(null, null, stat("Cheapest that still works", cheapest?.label ?? "-", cheapest ? `${fmt.fixed(cheapest.pass_at_1.estimate)} pass@1 at ${fmt.usd(cheapest.usd_per_success)} per success` : "")),
       card(null, null, stat("Significant comparisons", `${payload.comparisons.filter((c) => c.significant_after_holm).length} / ${payload.comparisons.length}`, "after Holm-Bonferroni across all pairs")),
+      /* The repository recommends a row, and the interface never said which.
+         It is not the top of the frontier, and the reason is the argument:
+         the top row leans on a proprietary mid-tier model, this one is
+         reproducible on open weights. Worth a tile rather than a footnote. */
+      recommended &&
+        card(null, null, stat("What this repo recommends", recommended.label, `${fmt.fixed(recommended.pass_at_1.estimate)} pass@1 at ${fmt.usd(recommended.usd_per_success)} per success`)),
     ),
   );
 
@@ -148,6 +161,18 @@ export async function lab(host) {
         { class: "row" },
         h("h2", { style: { marginRight: "auto" } }, row.label),
         ...(row.tags ?? []).map((t) => chip(t, t === "recommended" ? "accent" : "")),
+        /* The end of the journey this screen starts. You have read the numbers
+           for a configuration; the obvious next question is what it actually
+           does, and until now there was no way to ask it from here. */
+        h(
+          "button",
+          {
+            class: "btn",
+            title: `Ask ${row.label} a question and watch it work`,
+            onclick: () => go("chat", { params: { pipeline: row.pipeline } }),
+          },
+          "Try this configuration",
+        ),
       ),
     );
     if (pipe) {
@@ -226,6 +251,13 @@ export async function lab(host) {
   host.appendChild(h("div", { style: { marginTop: "1.6rem" } }, detailHost));
   drawDetail();
 
+  /* Charts read their colours from custom properties at draw time, so a theme
+     change needs the charts redrawn and nothing else. The toggle used to
+     re-render the entire screen, which discarded the visitor's selection to
+     recolour some SVG. */
+  const repaint = () => { drawPareto(); drawDetail(); };
+  window.addEventListener("themechange", repaint);
+
   /* -- the optimizer tracks ---------------------------------------------- */
   const tracks = Object.values(optimize);
   if (tracks.length) {
@@ -275,4 +307,6 @@ export async function lab(host) {
         `Hidden split ${String(manifest.hidden_split_sha256 ?? "").slice(0, 16)}..., sealed in git before the first optimisation run.`),
     ),
   );
+
+  return () => window.removeEventListener("themechange", repaint);
 }

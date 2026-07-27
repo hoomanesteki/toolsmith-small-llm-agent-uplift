@@ -7,11 +7,13 @@
  */
 
 import { api } from "../api.js";
-import { card, chip, clear, empty, fmt, h, ticker } from "../ui.js";
+import { blurbs } from "../app.js";
+import { card, chip, clear, empty, fmt, h, orientation, ticker } from "../ui.js";
 
 export async function chat(host) {
   clear(host);
   host.appendChild(h("h1", {}, "Ask, and watch it work"));
+  host.appendChild(orientation(blurbs.chat));
   host.appendChild(
     h("p", { class: "lede", html:
       "Pick any task from the generated suite and any configuration from the matrix. The selector changes the " +
@@ -26,7 +28,11 @@ export async function chat(host) {
   const tierPick = h("select", { "aria-label": "Tier" }, [["", "Any tier"], ...Object.keys(config.tiers).map((t) => [t, t])].map(([v, l]) => h("option", { value: v }, l)));
   const taskPick = h("select", { "aria-label": "Task", style: { maxWidth: "34rem" } });
   const pipePick = h("select", { "aria-label": "Configuration" },
-    Object.entries(config.pipelines).map(([name, p]) => h("option", { value: name, selected: name === "cascade_default" }, p.label)));
+    Object.entries(config.pipelines).map(([name, p]) => h("option", { value: name }, p.label)));
+  /* Honour a configuration handed over from the Lab, so "try this one" arrives
+     with that one selected rather than the default. */
+  const asked = new URLSearchParams(window.location.search).get("pipeline");
+  pipePick.value = config.pipelines?.[asked] ? asked : "cascade_default";
   const runButton = h("button", { class: "btn" }, "Run");
 
   host.appendChild(h("div", { class: "row" },
@@ -156,5 +162,7 @@ export async function chat(host) {
   }
 
   await loadTasks();
-  if (!tasks.length) output.appendChild(empty("No tasks. Run `uv run toolsmith tasks build`."));
+  if (!tasks.length) {
+    output.appendChild(empty("No tasks yet. Run ", h("code", {}, "uv run toolsmith tasks build"), "."));
+  }
 }

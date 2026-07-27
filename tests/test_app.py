@@ -14,6 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+from toolsmith.config import REPO_ROOT
 
 client = TestClient(app)
 
@@ -256,3 +257,53 @@ def test_the_openapi_schema_is_published():
     schema = client.get("/api/openapi.json").json()
     assert "/api/matrix" in schema["paths"]
     assert "/api/run" in schema["paths"]
+
+
+# ------------------------------------------------------------ the journey --
+
+WEB = REPO_ROOT / "web"
+
+
+def test_the_failure_gallery_can_reach_the_run_it_names():
+    """A failure you cannot open is a claim, not evidence.
+
+    The four screens were four islands: you could read that a configuration
+    loses and have no way to watch it lose. The gallery now links each row whose
+    trace was kept to `/flow?run=<id>`, and Flow opens on that run instead of on
+    whichever trace sorts first. Both halves have to be present for the handoff
+    to work, so both are asserted here.
+    """
+    review = (WEB / "js" / "screens" / "review.js").read_text(encoding="utf-8")
+    flow = (WEB / "js" / "screens" / "flow.js").read_text(encoding="utf-8")
+
+    assert "/flow?run=" in review, "the gallery does not link anywhere"
+    assert 'get("run")' in flow, "Flow ignores the run it was handed"
+
+
+def test_the_lab_can_hand_a_configuration_to_chat():
+    lab = (WEB / "js" / "screens" / "lab.js").read_text(encoding="utf-8")
+    chat = (WEB / "js" / "screens" / "chat.js").read_text(encoding="utf-8")
+
+    assert 'go("chat"' in lab, "the Lab cannot send a configuration anywhere"
+    assert 'get("pipeline")' in chat, "Chat ignores the configuration it was handed"
+
+
+def test_every_screen_shows_the_orientation_copy_the_api_serves():
+    """`/api/screens` existed from the start and nothing rendered it.
+
+    The app opened on a dense table with no statement of what a row was, while
+    the sentence explaining exactly that sat unread behind an endpoint.
+    """
+    served = client.get("/api/screens").json()
+    assert set(served) == {"lab", "flow", "chat", "review"}
+    for screen in served:
+        source = (WEB / "js" / "screens" / f"{screen}.js").read_text(encoding="utf-8")
+        assert f"orientation(blurbs.{screen})" in source, f"{screen} shows no orientation"
+
+
+def test_the_pareto_points_are_reachable_without_a_mouse():
+    """Selecting a point is the Lab's primary interaction, and it was mouse-only."""
+    charts = (WEB / "js" / "charts.js").read_text(encoding="utf-8")
+    assert 'tabindex: "0"' in charts
+    assert "onkeydown" in charts
+    assert "aria-label" in charts

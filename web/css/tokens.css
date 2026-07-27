@@ -54,10 +54,15 @@
   --accent-ink: oklch(1 0 0);
 
   /* -- status (icon + label always; never colour alone) ------------------ */
-  --good: #0ca30c;
-  --warning: #fab219;
-  --serious: #ec835a;
-  --critical: #d03b3b;
+  /* Restated in OKLCH so the pair below can hold lightness while the hue stays
+     put. The old hex values were one set for both modes: #0ca30c on the dark
+     plane and #fab219 on the light one both land under 3:1 at the 11px these
+     are actually used at, and a status colour you have to squint at is a
+     decoration. Light steps sit near L 0.5, dark near L 0.78. */
+  --good: oklch(0.52 0.16 145);
+  --warning: oklch(0.58 0.14 78);
+  --serious: oklch(0.56 0.15 45);
+  --critical: oklch(0.52 0.19 27);
 
   /* -- chart surface + validated categorical slots (light) --------------- */
   --chart-surface: #fcfcfb;
@@ -123,6 +128,11 @@
     --surface-sunken: oklch(0.125 0.004 285);
     --surface-glass: oklch(0.185 0.005 285 / 0.72);
 
+    --good: oklch(0.80 0.16 145);
+    --warning: oklch(0.84 0.14 88);
+    --serious: oklch(0.78 0.14 45);
+    --critical: oklch(0.72 0.18 25);
+
     --ink: oklch(0.97 0.002 285);
     --ink-secondary: oklch(0.76 0.005 285);
     --ink-muted: oklch(0.60 0.006 285);
@@ -167,6 +177,12 @@
   --surface-raised: oklch(0.215 0.006 285);
   --surface-sunken: oklch(0.125 0.004 285);
   --surface-glass: oklch(0.185 0.005 285 / 0.72);
+
+  --good: oklch(0.80 0.16 145);
+  --warning: oklch(0.84 0.14 88);
+  --serious: oklch(0.78 0.14 45);
+  --critical: oklch(0.72 0.18 25);
+
   --ink: oklch(0.97 0.002 285);
   --ink-secondary: oklch(0.76 0.005 285);
   --ink-muted: oklch(0.60 0.006 285);
