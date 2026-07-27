@@ -489,3 +489,30 @@ def test_the_committed_results_file_matches_the_committed_matrix():
         mine = [s for s in scores if s.pipeline == row["pipeline"] and s.trial == 0]
         observed = sum(s.passed for s in mine) / len(mine)
         assert observed == pytest.approx(row["pass_at_1"]["estimate"], abs=1e-6), row["pipeline"]
+
+
+def test_a_duplicate_row_is_dropped_and_the_baseline_is_what_survives(graded):
+    """Which of two indistinguishable rows survives is not a detail.
+
+    `ablation_no_compaction` turns off a mechanism that never engages on this
+    workload, so it reproduces `cascade_default` task for task and dollar for
+    dollar. Comparing it against the rest adds fourteen pairs to the corrected
+    family, each a configuration measured against itself under two names, which
+    enlarges the number Holm divides by.
+
+    The first attempt at this deduped in alphabetical order, which is the right
+    count and the wrong survivor: it kept the ablation and discarded the
+    recommended cascade that two sections of the findings page are built on.
+    """
+    from toolsmith.config import load_registry
+
+    declared = list(load_registry().pipelines)
+    surviving = set()
+    for comparison in compare_all(graded, prefer=declared):
+        surviving.add(comparison.left)
+        surviving.add(comparison.right)
+
+    present = {s.pipeline for s in graded}
+    dropped = present - surviving
+    for name in dropped:
+        assert declared.index(name) > 0, f"{name} was dropped in favour of a later row"

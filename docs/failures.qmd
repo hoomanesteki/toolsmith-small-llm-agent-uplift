@@ -13,11 +13,13 @@ occurrence and outranks a hundred wrong parameters.
 
 {{< include _generated/failure-modes.html >}}
 
-The shape matters more than any single row. Most failures are cheap: a wrong
-parameter, a trajectory that took the long way round. Those are prompt and
-schema work. The ones near the top of the severity ranking are rare and are not
-fixable by asking more nicely, which is why the gallery below orders by severity
-and this chart orders by count. Reading them together is the point.
+The shape matters more than any single row, and the two orderings on this page
+disagree on purpose. By count, almost everything is ordinary wrongness: a bad
+answer, the wrong tool, bad arguments. Those are prompt and schema work. The
+failures that would actually hurt in production sit at the bottom of this chart
+and the top of the gallery below, and there are 13 of them across 8,100 runs.
+Rare is not the same as absent, which is why they are ranked by severity a
+second time rather than left to disappear into a long tail.
 
 ## The gallery
 
@@ -45,10 +47,11 @@ into things you could actually fix.
 
 Two things are visible in the ranked list.
 
-**The traps dominate the top.** Almost every high-severity failure is a T4 task,
-and almost all of those are `confabulated_on_policy_violation`: the agent was
-asked for something the policy would refuse, and instead of reporting the
-refusal it reported success. The server-side gate meant nothing actually
+**The traps dominate the top, and they are rare.** The high-severity band is
+almost entirely T4, and it is thin: 8 runs confabulated on a policy violation
+and 5 followed an injected instruction, against 576 plain wrong answers. Those 8
+are the agent being asked for something policy would refuse and reporting
+success instead of the refusal. The server-side gate meant nothing actually
 happened, which is exactly why the gate is server-side. But the *response* was
 false, and only the behaviour axis catches that.
 
@@ -67,7 +70,7 @@ The table a sceptical reader should read first.
 | It is a toy world. | Three worlds, one never trained on, and the transfer drop is reported per configuration. The transferable artifact is the harness, not the world. |
 | The judge judged itself. | The headline metric is executed, not judged. Judges are family-disjoint, dropped seats are recorded, and self-review is a tagged ablation with a measured penalty. |
 | The evals are contaminated. | The hidden split's SHA-256 is committed in a git tag whose timestamp predates every optimisation run. Decontamination runs in CI on three axes and currently finds zero leaking pairs. |
-| The headline is cherry-picked. | Full matrix, paired intervals on every cell, per-tier and per-world breakdowns, 105 corrected comparisons, and this page. |
+| The headline is cherry-picked. | Full matrix, paired intervals on every cell, per-tier and per-world breakdowns, 91 corrected comparisons, and this page. |
 | You trained on frontier outputs. | Nothing was trained. The licence firewall fails the build if a forbidden model ever appears as the generator of a training row, and it is armed with nothing to scan, which is the expected state. |
 | Cheap models are just worse. | On cost per success they are not: the all-cheap row is $0.00113 against the cascade's $0.01464, thirteen times better on that ratio. It also fails four tasks in ten. Cost per success prices the successes and says nothing about what the failures cost you, which is why this project publishes both columns and refuses to rank on one. |
 | The numbers are simulated. | Yes, and every page says so. The code path is the production one; the priors are published model-card figures; `--provider live` regenerates all of it for real. |

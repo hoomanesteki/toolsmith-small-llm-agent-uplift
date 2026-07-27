@@ -120,9 +120,10 @@ Finding 2
 
 A model with per-step reliability *q* completes an N-step trajectory cleanly at
 roughly *q^N*. The planner and the reviewer are single shots. Measured here: the
-all-cheap row passes 71.4% of one-step tasks and 56.5% of two-step ones, which
-is what *q²* predicts from its own per-step prior. The all-frontier row gives up
-under four points across the same step.
+all-cheap row passes 71.4% of one-step tasks and 56.5% of two-step ones. Bare
+*q²* would say 51.0%; the gap is the reviewer and the escalation catching part
+of what the executor drops, which is the whole reason those two roles exist. The
+all-frontier row gives up under four points across the same step.
 
 This inverts the usual intuition. The planner is cheap to upgrade **because it
 runs once**, not because its input is cheap.

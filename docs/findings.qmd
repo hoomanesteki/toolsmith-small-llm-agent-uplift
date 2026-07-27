@@ -74,7 +74,15 @@ sweeping the threshold on validation and reporting on test:
   verifier fires often enough that the retries cost more than the successes
   they buy.
 - On a **quality** objective, always escalating reaches 96.7% pass@1, 2.5 points
-  above never escalating, at 57% more per success.
+  above the sweep's low end, at 57% more per success.
+
+The low end of that sweep is not the ablation row above it. At tau=0.00 the
+cascade still escalates whenever the verifier explicitly rejects a trajectory,
+which is most of the escalations it ever performs; the threshold only starts
+binding once it is high enough to override an *accepted* one. The ablation
+removes escalation altogether. That is why one says 0.700 and the other 0.908,
+and the difference between them is a measure of how much work the explicit
+reject does on its own.
 
 Both ends are published. Which is right is a product decision, and the point of
 the track is that it is now priced rather than assumed.
