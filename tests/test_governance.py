@@ -157,3 +157,48 @@ def test_lineage_survives_reopening(tmp_path):
     LineageLog(path).emit("a", "world", "first")
     LineageLog(path).emit("b", "task", "second", ["a"])
     assert len(LineageLog(path).read()) == 2
+
+
+# ------------------------------------------------------- gates that cannot run --
+
+
+def _run_gate(command: list[str], repo_root, monkeypatch):
+    """Invoke a gate against a synthetic repository root."""
+    from typer.testing import CliRunner
+
+    import toolsmith.cli.ci as ci
+
+    monkeypatch.setattr(ci, "TASKS_DIR", repo_root / "data" / "tasks")
+    monkeypatch.setattr(ci, "DATASET", repo_root / "data" / "tasks" / "tasks.jsonl")
+    monkeypatch.setattr(ci, "SEAL", repo_root / "data" / "tasks" / "hidden_split.sha256")
+    return CliRunner().invoke(ci.app, command)
+
+
+def test_a_gate_that_cannot_check_the_seal_fails_rather_than_passes(tmp_path, monkeypatch):
+    """The bug this pins down cost nothing to introduce and hid for eight commits.
+
+    `data/tasks/tasks.jsonl` is derived and gitignored, so a CI checkout does
+    not have it. Both of these gates used to take an early branch and print
+    PASS, which meant the `gates` job went green on every push without ever
+    checking decontamination or the seal. Being unable to verify something is
+    not the same as having verified it, and the exit code has to agree.
+    """
+    tasks = tmp_path / "data" / "tasks"
+    tasks.mkdir(parents=True)
+    (tasks / "hidden_split.sha256").write_text("deadbeef\n", encoding="utf-8")
+
+    for command in (["hidden-split"], ["decontam"]):
+        result = _run_gate(command, tmp_path, monkeypatch)
+        assert result.exit_code == 1, f"{command} passed with nothing to check"
+        assert "cannot verify" in result.output
+
+
+def test_a_project_that_has_generated_nothing_skips_rather_than_passes(tmp_path, monkeypatch):
+    """No seal and no dataset is a legitimate state, but it is not a pass."""
+    (tmp_path / "data" / "tasks").mkdir(parents=True)
+
+    for command in (["hidden-split"], ["decontam"]):
+        result = _run_gate(command, tmp_path, monkeypatch)
+        assert result.exit_code == 0
+        assert "SKIP" in result.output
+        assert "PASS" not in result.output

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import datetime as dt
 import sqlite3
+from dataclasses import replace
 
 import pytest
 
@@ -51,25 +52,6 @@ def test_world_rebuilds_to_an_identical_digest(key):
     """The precondition for treating anything downstream as ground truth."""
     spec = get_world(key)
     assert build_world(spec).digest == build_world(spec).digest
-
-
-@pytest.mark.parametrize("key", WORLD_KEYS)
-def test_world_build_is_atomic(key, tmp_path):
-    """A half-written world is worse than no world.
-
-    build_world used to delete and rewrite the shared path, so a second process
-    could read a partially-seeded database. That produced a silently different
-    world and therefore a silently different task suite: a concurrent rebuild
-    during a validation run generated 7,175 tasks instead of 7,756 and broke the
-    hidden-split seal. It now stages to a temporary file and renames.
-    """
-    spec = get_world(key)
-    first = build_world(spec, directory=tmp_path)
-    assert first.path.exists()
-    second = build_world(spec, directory=tmp_path)
-    assert second.digest == first.digest
-    # No staging files survive a successful build.
-    assert not list(tmp_path.glob("*.building"))
 
 
 @pytest.mark.parametrize("key", WORLD_KEYS)
@@ -580,6 +562,46 @@ def test_digest_ignores_row_insertion_order():
         return db_digest(conn)
 
     assert build([("a", 1), ("b", 2)]) == build([("b", 2), ("a", 1)])
+
+
+@pytest.mark.parametrize("key", WORLD_KEYS)
+def test_a_rebuild_never_exposes_a_half_written_database(key, tmp_path):
+    """A reader holding the world across a rebuild must still see it whole.
+
+    This is the bug that produced 7,175 tasks instead of 7,756 and broke the
+    hidden-split seal. Building in place leaves a window where the file exists,
+    opens cleanly and is missing most of its rows, so nothing raises and the
+    generator quietly works from a smaller world. Staging and renaming closes
+    it: the reader keeps the previous inode until it lets go.
+
+    The earlier version of this test built twice and compared digests, which a
+    non-atomic build passes without difficulty. Holding a connection open
+    across the second build is what makes it a test.
+    """
+    spec = get_world(key)
+    first = build_world(spec, directory=tmp_path)
+    table = max(first.row_counts, key=lambda t: first.row_counts[t])
+
+    reader = sqlite3.connect(first.path)
+    try:
+        before = reader.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        second = build_world(spec, directory=tmp_path)  # a concurrent rebuild
+        assert reader.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == before
+    finally:
+        reader.close()
+
+    assert second.digest == first.digest
+    assert not list(tmp_path.glob("*.building")), "a staging file was left behind"
+
+
+def test_a_failed_build_leaves_no_debris(tmp_path):
+    """Half a world on disk is worse than no world, because it looks usable."""
+    spec = get_world("ops")
+    broken = replace(spec, seed=lambda conn, seed: (_ for _ in ()).throw(RuntimeError("boom")))
+    with pytest.raises(RuntimeError):
+        build_world(broken, directory=tmp_path)
+
+    assert not list(tmp_path.iterdir()), "a failed build left a file a reader could open"
 
 
 def test_cents_helper_rounds_to_integers():

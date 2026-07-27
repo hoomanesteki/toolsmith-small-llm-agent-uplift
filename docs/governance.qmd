@@ -103,7 +103,7 @@ the process.
 | Job | What it does |
 |---|---|
 | `quality` | ruff format, ruff lint, mypy |
-| `test` | 319 tests on two operating systems and two Python versions |
+| `test` | 322 tests on two operating systems and two Python versions |
 | `gates` | the five governance gates above |
 | `reproduce` | the whole pipeline end to end, then asserts the committed artifacts are byte-identical to a fresh run |
 | `drift` | weekly, checks every declared model against the provider's live catalogue and opens an issue on drift |
@@ -113,3 +113,20 @@ reproducibility bugs were found by running the matrix twice and diffing:
 measured wall-clock leaking into the results file, and gzip stamping both a
 timestamp and the output filename into its header. Both are fixed, and the job
 would catch a third.
+
+### A gate that could not fail
+
+For a while the `gates` job was green on every push and checking almost
+nothing. The task suite is derived from a seed rather than committed, so a
+checkout does not have it, and two of the gates treated a missing dataset as
+an early return that printed `PASS`. Decontamination and the hidden-split seal,
+the two claims the whole argument rests on, were being reported as verified on
+evidence that was not there.
+
+The repair has two halves, and only having both makes it a check again. CI now
+generates the dataset before the gates run, so there is something to verify.
+And a gate that cannot verify no longer says `PASS`: it says `SKIP` when a
+project has genuinely generated nothing, and it fails outright when a seal is
+committed but the data it seals is missing, which is the case that was quietly
+passing. Two tests pin the behaviour, and both of them fail against the old
+implementation.

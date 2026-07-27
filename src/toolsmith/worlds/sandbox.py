@@ -20,8 +20,10 @@ is where they occur in production, and it is the step most evaluations skip.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -101,21 +103,35 @@ def build_world(
     directory = directory or BUILD_DIR
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{world.key}-{seed}.sqlite3"
-    if path.exists():
-        path.unlink()
 
-    conn = sqlite3.connect(path)
+    # Staged to a private file and renamed into place, because the shared path
+    # has readers. Deleting it and seeding in place leaves a window in which a
+    # concurrent task run opens a half-populated database and believes it. That
+    # is not hypothetical: a rebuild that overlapped a validation run yielded
+    # 7,175 tasks instead of 7,756 and broke the hidden-split seal, and the
+    # symptom pointed at the generator rather than at the file underneath it.
+    handle, temporary = tempfile.mkstemp(dir=directory, suffix=".building")
+    os.close(handle)
+    staging = Path(temporary)
+
     try:
-        conn.executescript(world.schema_sql)
-        world.seed(conn, seed)
-        conn.commit()
-        digest = db_digest(conn)
-        counts = {
-            table: conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-            for table in table_names(conn)
-        }
-    finally:
-        conn.close()
+        conn = sqlite3.connect(staging)
+        try:
+            conn.executescript(world.schema_sql)
+            world.seed(conn, seed)
+            conn.commit()
+            digest = db_digest(conn)
+            counts = {
+                table: conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                for table in table_names(conn)
+            }
+        finally:
+            conn.close()
+        staging.replace(path)
+    except BaseException:
+        staging.unlink(missing_ok=True)
+        raise
+
     return WorldBuild(world.key, seed, path, digest, counts)
 
 

@@ -51,5 +51,17 @@ def verdict(passed: bool, message: str) -> None:
     console.print(f"[{style}]{mark}[/{style}]  {message}")
 
 
+def skipped(message: str) -> None:
+    """A gate that had nothing to check.
+
+    Kept visually distinct from PASS on purpose. Two gates used to print PASS
+    when the dataset was absent, which meant the `gates` job in CI went green
+    on every push without ever checking decontamination or the hidden-split
+    seal: the checkout has no dataset, so both took the empty branch. A gate
+    that cannot run has not passed, and the word on the screen should say so.
+    """
+    console.print(f"[warn]SKIP[/warn]  {message}")
+
+
 def money(amount: float) -> str:
     return f"${amount:,.4f}" if amount < 1 else f"${amount:,.2f}"
