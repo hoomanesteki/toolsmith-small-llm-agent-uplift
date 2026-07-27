@@ -178,8 +178,11 @@ class Pipeline:
             "run",
             behaviour=record.behaviour,
             usd=round(record.usd, 6),
+            # Modelled latency only. wall_clock_s stays on the record for
+            # debugging and deliberately does not reach the event stream: the
+            # stream is persisted as a committed fixture, and a measured value
+            # in a fixture makes it differ from itself on every regeneration.
             latency_s=round(record.latency_s, 3),
-            wall_clock_s=round(record.wall_clock_s, 3),
             turns=record.turns,
             escalated=record.escalated,
             calls=len(record.calls),

@@ -76,6 +76,17 @@ uv run toolsmith matrix run          # simulated by default, costs nothing
 - Tests assert behaviour and claims, not implementation. If the README says it,
   a test should break when it stops being true.
 
+## Skills
+
+Three project skills carry the detail, so it is inherited rather than
+rediscovered:
+
+- `toolsmith-dev` - the five invariants, the gates that enforce them, and the
+  specific bugs that motivated each one
+- `toolsmith-eval` - running an evaluation, adding a configuration, and reading
+  the results honestly
+- `toolsmith-domain` - adding a fourth world
+
 ## Adding a model
 
 1. Add a row to `configs/models.yaml` with a real `verified_on` date.

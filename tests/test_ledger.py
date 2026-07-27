@@ -91,7 +91,15 @@ def test_flush_appends_and_keeps_one_header(tmp_path):
         assert len(list(csv.DictReader(fh))) == 3
 
 
-def test_audit_csv_reports_by_provenance(tmp_path):
+def test_only_live_rows_are_persisted(tmp_path):
+    """The ledger accounts for real money, and only real money.
+
+    A single matrix run produces about a quarter of a million simulated rows.
+    Persisting them made costs.csv 46 MB of noise around a $0.00 signal, which
+    is the opposite of what a file called "costs" is for. The simulated totals
+    are not lost: they go in the run manifest, so the report can still say what
+    the same evidence would have cost to buy.
+    """
     path = tmp_path / "costs.csv"
     led = CostLedger(path=path, policy=BudgetPolicy(cap_usd=100.0, warn_at_usd=1.0))
     led.record(entry(0.10, "live"))
@@ -99,9 +107,22 @@ def test_audit_csv_reports_by_provenance(tmp_path):
     led.flush()
 
     audit = audit_csv(path, BudgetPolicy(cap_usd=1.0, warn_at_usd=0.5, per_run_cap_usd=1.0))
-    assert audit.by_provenance == {"live": 0.1, "simulated": 2.0}
+    assert audit.by_provenance == {"live": 0.1}
     assert audit.live_usd == pytest.approx(0.10)
     assert audit.within_cap is True
+
+    # The in-memory summary still reports both, because a run needs to know
+    # what it would have cost.
+    assert led.summary()["usd_simulated"] == pytest.approx(2.0)
+
+
+def test_a_purely_simulated_run_writes_no_ledger_file(tmp_path):
+    path = tmp_path / "costs.csv"
+    led = CostLedger(path=path, policy=BudgetPolicy(cap_usd=100.0, warn_at_usd=1.0))
+    for _ in range(50):
+        led.record(entry(1.0, "simulated"))
+    led.flush()
+    assert not path.exists(), "nothing was spent, so there is nothing to account for"
 
 
 def test_audit_flags_a_breach(tmp_path):

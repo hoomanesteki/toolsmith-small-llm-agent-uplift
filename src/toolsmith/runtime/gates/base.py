@@ -56,7 +56,11 @@ class GateVerdict:
                 {"rule": f.rule, "severity": f.severity, "span": f.span[:120]}
                 for f in self.findings
             ],
-            "latency_ms": round(self.latency_ms, 3),
+            # One decimal place: the resolution at which this number means
+            # something. These gates run in microseconds, so three decimals is
+            # machine noise that differs between two identical runs and makes
+            # the committed trace fixtures fail their own drift check.
+            "latency_ms": round(self.latency_ms, 1),
             "model_used": self.model_used,
             "metrics": self.metrics,
         }

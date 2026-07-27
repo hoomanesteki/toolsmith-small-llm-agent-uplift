@@ -69,6 +69,32 @@ jobs:
           path: coverage.xml
           if-no-files-found: ignore
 
+  site:
+    name: Report site renders
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.8.23"
+      - name: Render
+        run: quarto render docs
+      - name: Assert no include resolved to nothing
+        run: |
+          # A missing {{< include >}} renders as a silent blank in Quarto, which
+          # is the worst possible failure mode for a report.
+          for page in docs/_site/index.html docs/_site/results.html docs/_site/findings.html; do
+            if ! grep -q "<table" "$page"; then
+              echo "::error::$page has no table: an include resolved to nothing."
+              exit 1
+            fi
+          done
+          echo "Every page rendered with its generated content."
+
   gates:
     name: Governance gates
     runs-on: ubuntu-latest
@@ -112,20 +138,30 @@ jobs:
         run: uv run toolsmith ci hidden-split
 
       - name: Run the evaluation matrix
-        run: uv run toolsmith matrix run --provider simulated
+        run: uv run toolsmith matrix run --provider simulated --n 180 --trials 3
+
+      - name: Run the optimizer tracks
+        run: uv run toolsmith optimize run all --n 120
 
       - name: Regenerate every published artifact
         run: uv run toolsmith report build
 
       - name: Assert the committed artifacts are byte-identical
         run: |
-          if ! git diff --quiet -- eval/ docs/data/; then
+          # The claim this enforces: every number in the report is regenerable.
+          # Two reproducibility bugs have already been caught here (measured
+          # wall-clock leaking into results, and gzip stamping its own filename
+          # into the header), so this is a real gate rather than a formality.
+          if ! git diff --quiet -- eval/ docs/_generated/ docs/data/; then
             echo "::error::Committed artifacts drifted from a fresh run."
-            echo "Every number in the report must be regenerable. Run 'make all' and commit."
-            git --no-pager diff --stat -- eval/ docs/data/
+            echo "Run 'make all' locally and commit the result."
+            git --no-pager diff --stat -- eval/ docs/_generated/ docs/data/
             exit 1
           fi
           echo "Committed artifacts match a fresh run exactly."
+
+      - name: Verify the zero-key demo works on a fresh checkout
+        run: uv run toolsmith demo --run
 
       - uses: actions/upload-artifact@v4
         with:

@@ -39,6 +39,10 @@ cov:  ## Run tests with coverage
 .PHONY: check
 check: lint test gates  ## Everything CI runs
 
+.PHONY: demo
+demo:  ## Verify the zero-key demo works and print what to look at
+	$(RUN) toolsmith demo --run
+
 # ------------------------------------------------------------------- gates --
 .PHONY: gates
 gates: firewall decontam budget  ## All CI policy gates
@@ -66,7 +70,11 @@ tasks:  ## Generate the task suite with oracle programs and splits
 
 .PHONY: matrix
 matrix:  ## Run the full evaluation matrix (simulated provider, $0)
-	$(RUN) toolsmith matrix run --provider simulated
+	$(RUN) toolsmith matrix run --provider simulated --n 180 --trials 3
+
+.PHONY: optimize
+optimize:  ## Run the four improvement tracks
+	$(RUN) toolsmith optimize run all --n 120
 
 .PHONY: report
 report:  ## Regenerate every published artifact from results.jsonl
@@ -82,7 +90,7 @@ serve:  ## Run the control plane on http://127.0.0.1:7860
 
 # ------------------------------------------------------------------- all ----
 .PHONY: all
-all: worlds tasks matrix report site  ## Full reproduction, end to end
+all: worlds tasks matrix optimize report site demo  ## Full reproduction, end to end
 
 .PHONY: clean
 clean:  ## Remove generated artifacts (keeps committed fixtures)

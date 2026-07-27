@@ -54,6 +54,25 @@ def test_world_rebuilds_to_an_identical_digest(key):
 
 
 @pytest.mark.parametrize("key", WORLD_KEYS)
+def test_world_build_is_atomic(key, tmp_path):
+    """A half-written world is worse than no world.
+
+    build_world used to delete and rewrite the shared path, so a second process
+    could read a partially-seeded database. That produced a silently different
+    world and therefore a silently different task suite: a concurrent rebuild
+    during a validation run generated 7,175 tasks instead of 7,756 and broke the
+    hidden-split seal. It now stages to a temporary file and renames.
+    """
+    spec = get_world(key)
+    first = build_world(spec, directory=tmp_path)
+    assert first.path.exists()
+    second = build_world(spec, directory=tmp_path)
+    assert second.digest == first.digest
+    # No staging files survive a successful build.
+    assert not list(tmp_path.glob("*.building"))
+
+
+@pytest.mark.parametrize("key", WORLD_KEYS)
 def test_world_binds_every_required_verb(key):
     spec = get_world(key)
     assert set(spec.tools) >= REQUIRED_VERBS

@@ -1,0 +1,56 @@
+---
+title: "Decisions"
+subtitle: "The choices worth recording, with what they cost."
+---
+
+::: {.lede}
+An architecture decision record earns its place when the decision was not
+obvious and the reasoning would otherwise be lost. There are two here.
+:::
+
+## [ADR 0001: A deterministic simulator is a first-class provider](0001-a-deterministic-simulator-is-a-first-class-provider.md)
+
+The largest decision in the project and the one a reader should judge it on.
+The simulator implements the same `Provider` interface as the live adapters, so
+every layer above it is the production code path. That makes `make all` run in
+six minutes for nothing on a fresh clone with no keys, and it makes CI exercise
+the statistics on every commit rather than merely importing them.
+
+What it owes the reader: the absolute numbers are as good as the priors, so
+every artifact is stamped `provenance: simulated` and the report carries a
+banner rather than a footnote.
+
+## [ADR 0002: The user interface has no build step](0002-no-build-step-for-the-user-interface.md)
+
+A documented deviation from the source design document's binding UI stack. Two
+constraints emerged that the specification could not have known: the demo must
+work offline on a fresh clone, and the deployment target is one sleeping
+container.
+
+What it cost: roughly 1,900 lines a library would have provided. What it bought:
+zero frontend dependencies, an offline-capable demo, and charts written against
+the rules that make charts readable rather than configured around a library's
+defaults.
+
+## Decisions that did not need a record
+
+For completeness, because "why is it like this" is a fair question about all of
+them:
+
+- **SQLite rather than DuckDB for the worlds.** The worlds are thousands of rows
+  and need transactional isolation per task, not analytics. SQLite's
+  `serialize`/`deserialize` gives a private in-memory copy per task in
+  microseconds, which is what makes 8,100 runs finish in three minutes.
+- **No scipy.** The two statistical functions that would have justified it, an
+  exact binomial and an inverse normal CDF, are fifteen lines each and checkable
+  by eye. A project arguing about counting costs honestly should not add a
+  30 MB dependency for that.
+- **No DSPy.** It is the right tool for Track A and every optimiser in it needs
+  live scoring calls, which is the constraint this project is built around. The
+  candidate pool, scoring interface and selection rule are implemented; only the
+  scorer would change.
+- **Lexical retrieval in docworld rather than embeddings.** A committed
+  embedding index would make the repository large and the results
+  machine-dependent, and lexical retrieval fails in exactly the ways that make
+  the grounding tier interesting: the right heading from the wrong service, and
+  the right service from a superseded version.
