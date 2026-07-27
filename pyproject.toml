@@ -27,7 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 serve = [
-  "fastapi>=0.115",
+  "fastapi>=0.140.2",
   "uvicorn[standard]>=0.32",
   "sse-starlette>=2.1",
 ]
