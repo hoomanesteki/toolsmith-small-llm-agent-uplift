@@ -181,19 +181,48 @@ def read_matrix(path: Path = MATRIX_PATH) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+#: Committed traces are stamped from this instant rather than from the clock.
+TRACE_EPOCH = "2026-01-01T00:00:00.000+00:00"
+
+#: Measured fields, stripped when an event stream is persisted as a fixture.
+#:
+#: The principle, arrived at the hard way: a committed artifact may contain
+#: nothing that was measured. A wall-clock timestamp, a gate's microsecond
+#: latency, a loop's elapsed time - each differs between two identical runs, so
+#: each makes the drift check that proves reproducibility fail for no reason,
+#: and a check that fails for no reason is a check people learn to ignore.
+#: These fields remain on the live stream, where they are genuinely useful; they
+#: simply do not reach the fixture. Modelled provider latency, which is what the
+#: waterfall actually draws, is deterministic and stays.
+MEASURED_EVENT_FIELDS = ("latency_ms", "wall_clock_s")
+
+
 def write_traces(traces: dict[str, str], directory: Path = TRACES_DIR) -> int:
     """Committed event streams. The zero-key demo reads these.
 
     Filenames are derived from the run key rather than from a counter, so a
     re-run overwrites the same file and the diff shows what changed instead of
-    a wholesale renumbering.
+    a wholesale renumbering. Timestamps and sequence numbers are normalised, for
+    the reason above.
     """
     directory.mkdir(parents=True, exist_ok=True)
     for existing in directory.glob("*.jsonl"):
         existing.unlink()
     for run_id, jsonl in sorted(traces.items()):
         safe = run_id.replace(":", "__").replace("/", "_")
-        (directory / f"{safe}.jsonl").write_text(jsonl + "\n", encoding="utf-8")
+        rows = []
+        for index, line in enumerate(jsonl.splitlines()):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            row["timestamp"] = TRACE_EPOCH
+            row["seq"] = index
+            data = row.get("data")
+            if isinstance(data, dict):
+                for field_name in MEASURED_EVENT_FIELDS:
+                    data.pop(field_name, None)
+            rows.append(json.dumps(row, sort_keys=True, default=str))
+        (directory / f"{safe}.jsonl").write_text("\n".join(rows) + "\n", encoding="utf-8")
     return len(traces)
 
 

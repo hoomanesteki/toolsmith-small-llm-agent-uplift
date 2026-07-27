@@ -62,6 +62,16 @@ def content_hash(payload: Any) -> str:
     return "sha256:" + hashlib.sha256(blob.encode("utf-8")).hexdigest()[:24]
 
 
+#: Deterministic stamp for generated rows.
+#:
+#: A wall-clock ``created_at`` would rewrite every row of the committed task
+#: sample on each regeneration, which breaks the byte-identity check and makes
+#: a no-op rebuild look like a change. Generated data is reproducible from its
+#: seed, so its provenance timestamp is a property of the generator rather than
+#: of the moment it ran.
+ORACLE_EPOCH = "2026-01-01T00:00:00+00:00"
+
+
 def oracle_provenance(seed: int, parents: list[str] | None = None) -> Provenance:
     """The provenance every generated task and gold trajectory carries.
 
@@ -74,6 +84,7 @@ def oracle_provenance(seed: int, parents: list[str] | None = None) -> Provenance
         generator_model=None,
         generator_version="toolsmith/oracle",
         license="MIT",
+        created_at=ORACLE_EPOCH,
         seed=seed,
         parents=parents or [],
         notes="Deterministic. Executed in a sandbox, never judged by a model.",

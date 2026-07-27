@@ -73,8 +73,8 @@ sweeping the threshold on validation and reporting on test:
 - On a **cost-per-success** objective, the optimal threshold is 0.00. The
   verifier fires often enough that the retries cost more than the successes
   they buy.
-- On a **quality** objective, always escalating reaches 94.2% against 90.8% for
-  never escalating, at 56% more per success.
+- On a **quality** objective, always escalating reaches 96.7% pass@1, 2.5 points
+  above never escalating, at 57% more per success.
 
 Both ends are published. Which is right is a product decision, and the point of
 the track is that it is now priced rather than assumed.

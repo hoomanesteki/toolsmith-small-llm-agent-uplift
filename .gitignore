@@ -234,3 +234,7 @@ node_modules/
 data/tasks/tasks.jsonl
 eval/results/manifest.json
 docs/.quarto/
+
+# The ledger records real spend. Simulated rows are not persisted (see
+# CostLedger.flush), so this file stays small, but it is machine-local state.
+eval/costs.csv

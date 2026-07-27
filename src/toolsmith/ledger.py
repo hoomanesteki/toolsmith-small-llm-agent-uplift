@@ -147,9 +147,19 @@ class CostLedger:
         return entry
 
     def flush(self) -> Path:
-        """Append this run's entries to ``costs.csv``, creating it if needed."""
+        """Append this run's LIVE entries to ``costs.csv``, creating it if needed.
+
+        Simulated rows are deliberately not persisted. The ledger's job is
+        accounting for real money, and a single matrix run produces a quarter of
+        a million simulated rows, which is 46 MB of noise around a $0.00 signal
+        and would dwarf the file it is supposed to make auditable. The simulated
+        totals are not lost: they are recorded in the run manifest, so the
+        report can still say what the same evidence would have cost to buy.
+        """
         with self._lock:
-            entries = list(self._entries)
+            entries = [e for e in self._entries if e.provenance == "live"]
+        if not entries:
+            return self.path
         self.path.parent.mkdir(parents=True, exist_ok=True)
         exists = self.path.exists()
         with self.path.open("a", encoding="utf-8", newline="") as fh:

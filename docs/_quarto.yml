@@ -53,7 +53,9 @@ website:
           - cards/dataset-card.qmd
       - section: "Decisions"
         contents:
+          - adr/index.qmd
           - adr/0001-a-deterministic-simulator-is-a-first-class-provider.md
+          - adr/0002-no-build-step-for-the-user-interface.md
   page-footer:
     left: "Built by Hooman Esteki. Every number regenerable with one command."
     right: "MIT licensed."

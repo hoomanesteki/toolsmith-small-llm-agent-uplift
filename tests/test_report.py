@@ -121,6 +121,39 @@ def test_the_readme_headline_matches_the_results(numbers):
     assert f"{numbers['comparisons_significant']} of {numbers['comparisons_total']}" in readme
 
 
+# The prose quotes a handful of figures for readability. Each one is listed here
+# with the fact it must match, so a rebuild that moves a number cannot leave a
+# sentence behind. Anything not on this list should not be a literal in prose.
+PROSE_CLAIMS = {
+    "index.qmd": [
+        ("best pass@1", lambda n: f"{n['best']['pass_at_1']:.3f}"),
+        ("reference pass@1", lambda n: f"{n['reference']['pass_at_1']:.3f}"),
+        ("naive pass@1", lambda n: f"{n['naive']['pass_at_1']:.3f}"),
+        ("best vs reference", lambda n: f"{n['best_vs_reference']:.2f}x"),
+        ("input share", lambda n: f"{n['input_share'] * 100:.0f}%"),
+    ],
+    "results.qmd": [],
+    "findings.qmd": [
+        ("input share", lambda n: f"{n['input_share'] * 100:.0f}%"),
+        ("escalation gain", lambda n: f"{n['escalation_gain'] * 100:.1f}"),
+    ],
+}
+
+
+@pytest.mark.parametrize("page", sorted(PROSE_CLAIMS))
+def test_the_prose_has_not_gone_stale(page, numbers):
+    """A sentence that quotes a number must still agree with the results file.
+
+    The tables are generated, so they cannot drift. The prose around them can,
+    and a report whose headline paragraph disagrees with its own table is worse
+    than one with no paragraph.
+    """
+    text = (DOCS / page).read_text(encoding="utf-8")
+    for label, expected in PROSE_CLAIMS[page]:
+        value = expected(numbers)
+        assert value in text, f"{page} no longer contains the {label} ({value})"
+
+
 def test_the_site_declares_its_pages():
     config = (DOCS / "_quarto.yml").read_text(encoding="utf-8")
     for page in (
