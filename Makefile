@@ -45,7 +45,8 @@ demo:  ## Verify the zero-key demo works and print what to look at
 
 # ------------------------------------------------------------------- gates --
 .PHONY: gates
-gates: firewall decontam budget  ## All CI policy gates
+gates:  ## All five CI policy gates, in one command, exactly as CI runs them
+	$(RUN) toolsmith ci all
 
 .PHONY: firewall
 firewall:  ## License firewall: no forbidden model may appear in training data

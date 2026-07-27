@@ -7,8 +7,15 @@ whole graph is
 
 Reading it backwards from a cell in the results table tells you which task
 produced it, which oracle program defined its ground truth, which seed built
-the database that oracle ran against, and which config was in force. The web UI
-renders it; ``toolsmith report lineage`` prints it.
+the database that oracle ran against, and which config was in force.
+
+**Status: the structure exists and the pipeline does not yet write to it.** The
+log, the traversal and the append-only guarantee are implemented and tested; no
+production code path emits a node. Saying so here rather than leaving the
+docstring to imply otherwise, because a governance claim you cannot check is
+exactly what the rest of this package exists to avoid. Every fact the DAG would
+carry is currently recoverable from the provenance record on each row, which is
+written; the DAG would make the walk a lookup rather than a join.
 
 Append-only matters. A lineage file you can rewrite is a lineage file that
 proves nothing.

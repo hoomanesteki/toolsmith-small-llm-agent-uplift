@@ -103,9 +103,16 @@ export async function lab(host) {
   const detailHost = h("div");
 
   const drawPareto = () => {
+    /* Selecting a point rebuilds the chart, which destroys the node that had
+       focus and drops the keyboard user back to the top of the document. The
+       new mark for the same configuration gets it back. */
+    const refocus = document.activeElement?.closest?.("svg") != null;
     clear(paretoHost).appendChild(
       paretoChart(rows, { selected, onSelect: (name) => { selected = name; drawPareto(); drawDetail(); } }),
     );
+    if (!refocus) return;
+    const mark = paretoHost.querySelector(`[data-pipeline="${selected}"]`);
+    mark?.focus?.();
   };
 
   host.appendChild(card("The frontier", "Click any point to inspect that configuration.", paretoHost));

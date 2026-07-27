@@ -7,7 +7,7 @@ the cost-versus-quality frontier with confidence intervals and the losing
 transcripts attached.
 
 [**Read the report**](https://hoomanesteki.github.io/toolsmith-small-llm-agent-uplift/)
-· 334 tests · 5 governance gates · $0.00 of a $20 cap spent
+· 351 tests · 5 governance gates · $0.00 of a $20 cap spent
 
 ---
 
@@ -38,9 +38,9 @@ survive Holm-Bonferroni correction.
    task at no measurable cost in accuracy.
 
 2. **The executor is the only role whose errors compound.** Per-step reliability
-   *q* over N steps is *q^N*. Measured: the all-cheap row passes 71% of one-step
-   tasks and 57% of two-step ones, a 15-point fall, while the all-frontier row
-   gives up 4. The planner is cheap to upgrade because it runs *once*, not
+   *q* over N steps is *q^N*. Measured: the all-cheap row passes 71.4% of
+   one-step tasks and 56.5% of two-step ones, while the all-frontier row gives
+   up under four points across the same step. The planner is cheap to upgrade because it runs *once*, not
    because its input is cheap.
 
 3. **Escalation is a second independent attempt, worth 18 points of pass@1** at

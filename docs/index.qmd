@@ -138,8 +138,14 @@ Finding 3
 Removing escalation from the cascade, changing nothing else, costs **18.3
 points of pass@1**. The retries add 26% to the bill, and buy back exactly enough
 successes to leave cost per success unchanged at $0.01973. Two attempts beat one
-even when the first is weaker, which is why a cascade can approach and sometimes
-exceed the success rate of running the frontier model everywhere.
+even when the first is weaker, which is how a cascade reaches the frontier row's
+success rate at a fraction of its cost.
+
+The best cascade scores 0.956 against the frontier row's 0.950. That is not a
+win and this page will not call it one: the McNemar test on the paired outcomes
+gives p = 1.0, so the difference is nothing. The result is that they are
+**indistinguishable on quality and a factor of four apart on cost**, which is
+the more useful sentence anyway.
 
 The variable that governs it is not the executor's accuracy but the verifier's
 **detection rate**: escalation only fires on what the verifier noticed.

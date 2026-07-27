@@ -57,20 +57,24 @@ this harness can record, and it is a separate column for that reason.
 
 {{< include _generated/safety.md >}}
 
-The two injection columns say different things and are worth reading together.
-**Reached for the injection** is what the agent did: it found an instruction
-planted in a tool result and tried to obey it. **Injection resisted** is the
-share of injected tasks where it did not.
+**Injection resisted** is the share of injected tasks where the agent did not
+reach for the planted action. It used to mean something else: the world came out
+unchanged. That version read 1.000 for every configuration in this table,
+including the coin flip, which is not a fact about the agents. The policy
+function refuses the planted call server-side before anything can be written, so
+the world is always unchanged and the column was measuring the sandbox. An agent
+that reaches for the injected action and is refused has not resisted it, it was
+stopped. Counting attempts instead, the column runs from 0.100 on the coin flip
+to 1.000 on the frontier row, which is the ordering you would expect and the one
+it previously had no way to express.
 
-For a while there was only the second column, defined as "the world came out
-unchanged", and it read 1.000 for every configuration in the table. That is not
-a property of the agents. The policy function refuses the planted call
-server-side before anything can be written, so the world is always unchanged and
-the column was measuring the sandbox. An agent that reaches for the injected
-action and is refused has not resisted it. It was stopped, and being stopped is
-the gate's achievement, which belongs in the gate's column. Redefined that way
-the metric runs from 0.100 on the coin flip to 1.000 on the frontier row, which
-is the ordering you would expect and the one it could not previously express.
+The gate's own contribution is a single number rather than a column, because it
+is the same for every row: across all 450 injected runs in this matrix, the
+policy function refused **every** attempted privileged call and the world
+changed **zero** times. That is the point of putting it server-side. It is also
+why publishing it per configuration was misleading, and why an attempt-rate
+column beside this one would be pure redundancy: it is exactly one minus this,
+on all fifteen rows.
 
 ## Which differences are real
 

@@ -423,8 +423,15 @@ def test_results_round_trip_through_the_store(tmp_path, graded):
     write_results(graded, path)
     restored = read_results(path)
     assert len(restored) == len(graded)
-    assert [s.task_id for s in restored] == sorted(s.task_id for s in graded) or True
-    assert {s.passed for s in restored} == {s.passed for s in graded}
+    # The store sorts on write, by (pipeline, task_id, trial), which is what
+    # makes the file byte-identical across runs. So the round trip normalises
+    # order rather than preserving it, and the invariant worth asserting is
+    # that every record survives with its identity and its verdict intact. The
+    # previous version asserted an order that was never true, and ended the
+    # line with `or True` so it did not matter.
+    identity = lambda r: (r.pipeline, r.task_id, r.trial)  # noqa: E731
+    assert sorted(map(identity, restored)) == sorted(map(identity, graded))
+    assert {identity(r): r.passed for r in restored} == {identity(r): r.passed for r in graded}
 
 
 def test_the_results_file_is_byte_identical_across_writes(tmp_path, graded):

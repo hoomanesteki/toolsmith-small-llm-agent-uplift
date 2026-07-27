@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from toolsmith.config import BudgetPolicy, ModelSpec, load_registry
-from toolsmith.config.schema import Capabilities, RoleAssignment
+from toolsmith.config.schema import Capabilities, Registry, RoleAssignment
 
 
 @pytest.fixture(scope="module")
@@ -152,3 +152,20 @@ def test_verified_dates_are_not_in_the_future(registry):
     for key, spec in registry.models.items():
         if spec.verified_on:
             assert spec.verified_on <= today, f"{key} claims to be verified in the future"
+
+
+def test_a_judge_seat_that_names_no_model_fails_at_load():
+    """Panels went through no validation while they lived in a Python tuple.
+
+    A typo in a seat used to surface as a KeyError deep inside a matrix run,
+    after the worlds were built and several thousand tasks had executed. The
+    registry checks pipelines this way and now checks panels the same way, so a
+    bad seat is a config error at load like everything else here.
+    """
+    registry = load_registry()
+    with pytest.raises(ValidationError, match="unknown model"):
+        Registry(
+            models=registry.models,
+            pipelines=registry.pipelines,
+            panels={"default": ("no-such-model",)},
+        )

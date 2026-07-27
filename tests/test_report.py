@@ -45,11 +45,11 @@ def test_regeneration_is_deterministic(tmp_path, ctx):
     second = build(generated=tmp_path / "b", data=tmp_path / "bd")
     for name in first:
         if name.endswith(".json"):
-            a = json.loads(first[name].read_text())
-            b = json.loads(second[name].read_text())
-            a.pop("generated_on", None)
-            b.pop("generated_on", None)
-            assert a == b, name
+            # Nothing is popped here any more. `generated_on` used to be, which
+            # meant the test knew the artifact was volatile and agreed not to
+            # look. The field is gone; if another one appears this fails, which
+            # is the entire job.
+            assert json.loads(first[name].read_text()) == json.loads(second[name].read_text()), name
         else:
             assert first[name].read_text() == second[name].read_text(), name
 

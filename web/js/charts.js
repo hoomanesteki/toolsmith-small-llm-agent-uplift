@@ -24,7 +24,7 @@
  * never cycled past four.
  */
 
-import { clear, fmt, h, s, shorten, tooltip } from "./ui.js";
+import { fmt, h, s, shorten, tooltip } from "./ui.js";
 
 const tip = tooltip();
 
@@ -190,6 +190,7 @@ export function paretoChart(rows, { onSelect, selected } = {}) {
         cx, cy, r: 13, fill: "transparent", style: "cursor:pointer",
         tabindex: "0",
         role: "button",
+        "data-pipeline": p.pipeline,
         "aria-label": `${p.label}. ${rows.map(([k, v]) => (k ? `${k} ${v}` : v)).join(", ")}`,
         onmouseenter: (e) => tip.show(e, p.label, rows),
         onmousemove: (e) => tip.move(e),
@@ -417,103 +418,4 @@ export function waterfall(spans, { caption } = {}) {
       spans,
     ),
   });
-}
-
-/* ================================================================== line == */
-
-export function lineChart(series, { caption, xLabel, yLabel, format = fmt.fixed } = {}) {
-  const W = 760;
-  const H = 300;
-  const pad = { top: 16, right: 24, bottom: 46, left: 62 };
-  const all = series.flatMap((sr) => sr.points);
-  if (!all.length) return h("div", { class: "empty" }, "Nothing to plot.");
-  const x1 = Math.max(...all.map((p) => p[0]));
-  const y1 = Math.max(...all.map((p) => p[1])) * 1.06 || 1;
-  const sx = (v) => pad.left + (v / (x1 || 1)) * (W - pad.left - pad.right);
-  const sy = (v) => H - pad.bottom - (v / y1) * (H - pad.top - pad.bottom);
-  const palette = SERIES();
-
-  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": yLabel ?? "series" });
-  for (let i = 0; i <= 4; i++) {
-    const v = (y1 * i) / 4;
-    svg.appendChild(s("line", { x1: pad.left, x2: W - pad.right, y1: sy(v), y2: sy(v), stroke: GRID(), "stroke-width": 1 }));
-    svg.appendChild(s("text", { x: pad.left - 10, y: sy(v) + 4, "text-anchor": "end", fill: MUTED(), "font-size": 11 }, format(v)));
-  }
-  svg.appendChild(s("line", { x1: pad.left, x2: W - pad.right, y1: H - pad.bottom, y2: H - pad.bottom, stroke: AXIS(), "stroke-width": 1 }));
-  if (xLabel) svg.appendChild(s("text", { x: (W + pad.left) / 2, y: H - 10, "text-anchor": "middle", fill: INK2(), "font-size": 12 }, xLabel));
-
-  series.forEach((sr, i) => {
-    const colour = palette[i % palette.length];
-    const d = sr.points.map((p, k) => `${k ? "L" : "M"}${sx(p[0])},${sy(p[1])}`).join(" ");
-    svg.appendChild(s("path", { d, fill: "none", stroke: colour, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
-    for (const p of sr.points) {
-      svg.appendChild(s("circle", { cx: sx(p[0]), cy: sy(p[1]), r: 5, fill: SURFACE() }));
-      svg.appendChild(
-        s("circle", {
-          cx: sx(p[0]), cy: sy(p[1]), r: 3.5, fill: colour,
-          onmouseenter: (e) => tip.show(e, sr.name, [[xLabel ?? "x", String(p[0])], [yLabel ?? "y", format(p[1])]]),
-          onmousemove: (e) => tip.move(e),
-          onmouseleave: () => tip.hide(),
-        }),
-      );
-    }
-    // Direct-label the endpoint rather than every point.
-    const last = sr.points[sr.points.length - 1];
-    if (last) {
-      svg.appendChild(s("text", { x: sx(last[0]) + 8, y: sy(last[1]) + 4, fill: INK2(), "font-size": 11, "font-weight": 560 }, sr.name));
-    }
-  });
-
-  return figure(svg, {
-    legend: series.length > 1 ? legendOf(series.map((sr, i) => [sr.name, palette[i % palette.length]])) : null,
-    caption,
-    table: dataTable(
-      [
-        { label: "Series", get: (r) => r.name },
-        { label: xLabel ?? "x", num: true, get: (r) => r.x },
-        { label: yLabel ?? "y", num: true, get: (r) => format(r.y) },
-      ],
-      series.flatMap((sr) => sr.points.map((p) => ({ name: sr.name, x: p[0], y: p[1] }))),
-    ),
-  });
-}
-
-/* ============================================================== heat grid = */
-
-/** A sequential ramp, one hue light to dark. Never a rainbow. */
-export function heatGrid(rowLabels, colLabels, values, { caption, format = fmt.fixed } = {}) {
-  const ramp = [css("--seq-100"), css("--seq-250"), css("--seq-400"), css("--seq-550"), css("--seq-700")];
-  const max = Math.max(...values.flat(), 0.0001);
-  const grid = h("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: `minmax(90px, auto) repeat(${colLabels.length}, minmax(52px, 1fr))`,
-      gap: "2px",
-      fontSize: "var(--size-small)",
-      fontVariantNumeric: "tabular-nums",
-    },
-  });
-  grid.appendChild(h("div"));
-  for (const col of colLabels) {
-    grid.appendChild(h("div", { style: { color: "var(--ink-muted)", textAlign: "center", fontSize: "var(--size-micro)", textTransform: "uppercase", letterSpacing: "var(--track-micro)" } }, col));
-  }
-  rowLabels.forEach((rowLabel, r) => {
-    grid.appendChild(h("div", { style: { color: "var(--ink-secondary)", paddingRight: "0.5rem" } }, rowLabel));
-    colLabels.forEach((colLabel, c) => {
-      const v = values[r][c] ?? 0;
-      const step = ramp[Math.min(ramp.length - 1, Math.floor((v / max) * ramp.length))];
-      grid.appendChild(
-        h("div", {
-          style: { background: step, color: v / max > 0.55 ? "#fff" : "var(--chart-ink)", textAlign: "center", padding: "0.35rem 0.2rem", borderRadius: "3px" },
-          title: `${rowLabel} / ${colLabel}: ${format(v)}`,
-        }, format(v)),
-      );
-    });
-  });
-  return figure(grid, { caption });
-}
-
-export function renderInto(host, node) {
-  clear(host).appendChild(node);
-  return host;
 }
