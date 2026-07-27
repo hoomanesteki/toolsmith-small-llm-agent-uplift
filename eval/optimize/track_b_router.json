@@ -1,0 +1,174 @@
+{
+  "baseline": {
+    "escalation_rate": 0.2167,
+    "pass_at_1": 0.9417,
+    "tau": 0.0,
+    "usd_per_success": 0.018313
+  },
+  "candidates": [
+    {
+      "escalation_rate": 0.225,
+      "pass_at_1": 0.9083,
+      "split": "val",
+      "tau": 0.0,
+      "usd_per_success": 0.01937,
+      "usd_per_task": 0.017594
+    },
+    {
+      "escalation_rate": 0.225,
+      "pass_at_1": 0.9083,
+      "split": "val",
+      "tau": 0.35,
+      "usd_per_success": 0.01937,
+      "usd_per_task": 0.017594
+    },
+    {
+      "escalation_rate": 0.225,
+      "pass_at_1": 0.9083,
+      "split": "val",
+      "tau": 0.45,
+      "usd_per_success": 0.01937,
+      "usd_per_task": 0.017594
+    },
+    {
+      "escalation_rate": 0.225,
+      "pass_at_1": 0.9083,
+      "split": "val",
+      "tau": 0.55,
+      "usd_per_success": 0.01937,
+      "usd_per_task": 0.017594
+    },
+    {
+      "escalation_rate": 0.225,
+      "pass_at_1": 0.9083,
+      "split": "val",
+      "tau": 0.65,
+      "usd_per_success": 0.01937,
+      "usd_per_task": 0.017594
+    },
+    {
+      "escalation_rate": 0.25,
+      "pass_at_1": 0.9083,
+      "split": "val",
+      "tau": 0.75,
+      "usd_per_success": 0.019772,
+      "usd_per_task": 0.017959
+    },
+    {
+      "escalation_rate": 0.55,
+      "pass_at_1": 0.9167,
+      "split": "val",
+      "tau": 0.85,
+      "usd_per_success": 0.024063,
+      "usd_per_task": 0.022058
+    },
+    {
+      "escalation_rate": 1.0,
+      "pass_at_1": 0.9417,
+      "split": "val",
+      "tau": 1.0,
+      "usd_per_success": 0.030294,
+      "usd_per_task": 0.028526
+    },
+    {
+      "escalation_rate": 0.2167,
+      "pass_at_1": 0.9417,
+      "split": "test",
+      "tau": 0.0,
+      "usd_per_success": 0.018313,
+      "usd_per_task": 0.017245
+    },
+    {
+      "escalation_rate": 0.2167,
+      "pass_at_1": 0.9417,
+      "split": "test",
+      "tau": 0.35,
+      "usd_per_success": 0.018313,
+      "usd_per_task": 0.017245
+    },
+    {
+      "escalation_rate": 0.2167,
+      "pass_at_1": 0.9417,
+      "split": "test",
+      "tau": 0.45,
+      "usd_per_success": 0.018313,
+      "usd_per_task": 0.017245
+    },
+    {
+      "escalation_rate": 0.2167,
+      "pass_at_1": 0.9417,
+      "split": "test",
+      "tau": 0.55,
+      "usd_per_success": 0.018313,
+      "usd_per_task": 0.017245
+    },
+    {
+      "escalation_rate": 0.2167,
+      "pass_at_1": 0.9417,
+      "split": "test",
+      "tau": 0.65,
+      "usd_per_success": 0.018313,
+      "usd_per_task": 0.017245
+    },
+    {
+      "escalation_rate": 0.3,
+      "pass_at_1": 0.9333,
+      "split": "test",
+      "tau": 0.75,
+      "usd_per_success": 0.019684,
+      "usd_per_task": 0.018372
+    },
+    {
+      "escalation_rate": 0.5917,
+      "pass_at_1": 0.9417,
+      "split": "test",
+      "tau": 0.85,
+      "usd_per_success": 0.023687,
+      "usd_per_task": 0.022305
+    },
+    {
+      "escalation_rate": 1.0,
+      "pass_at_1": 0.9667,
+      "split": "test",
+      "tau": 1.0,
+      "usd_per_success": 0.028693,
+      "usd_per_task": 0.027737
+    }
+  ],
+  "chosen": {
+    "confidence_threshold": 0.0,
+    "selected_on": "val"
+  },
+  "cost_usd": 0.0,
+  "delta": {
+    "left_on_the_table_by_not_tuning_on_test": 0.0,
+    "pass_at_1": 0.0,
+    "price_of_that_quality_pct": 56.68,
+    "quality_available_pass_at_1": 0.025,
+    "quality_optimal_pass_at_1": 0.9667,
+    "quality_optimal_tau": 1.0,
+    "usd_per_success_pct": 0.0
+  },
+  "headline": "On a cost-per-success objective the optimal threshold is tau=0.00: escalation does not pay for itself, because the verifier fires often enough that the retries cost more than the successes they buy. It does buy quality if you want it: tau=1.00 reaches 96.7% pass@1, 2.5% above never escalating, for 57% more per success. Which of those is right is a product decision, and the point of this track is that it is now priced.",
+  "lever": "tau, the confidence below which a trajectory is retried on a stronger model",
+  "notes": [
+    "tau was chosen on val and applied unchanged to test. The best tau on test was 0.00; the difference between using it and using the honestly-selected one is published above as left_on_the_table_by_not_tuning_on_test.",
+    "The sweep is coarse deliberately. A finer grid over this many tasks would be fitting noise, and the objective surface is flat enough that it would not change the choice.",
+    "tau=0.0 disables threshold-triggered escalation but leaves the verifier's explicit reject trigger in place, which is why it is not identical to the ablation_no_escalation row in the main matrix.",
+    "The objective is minimum dollars per success, stated here because the choice of objective decides the answer. A quality-first objective picks the other end of the sweep, and both ends are published above.",
+    "The sweep is flat below about tau=0.65 because the combined confidence score rarely lands that low: the verifier's explicit reject is doing the work, and the threshold only starts to bind once it is high enough to override an accepted trajectory. That flatness is a finding about the signal, not a bug in the sweep."
+  ],
+  "optimised": {
+    "escalation_rate": 0.2167,
+    "pass_at_1": 0.9417,
+    "tau": 0.0,
+    "usd_per_success": 0.018313
+  },
+  "provenance": "simulated",
+  "ran_at": "2026-07-27",
+  "reported_on": "test",
+  "title": "Routing and escalation",
+  "track": "track_b_router",
+  "tuned_on": "val",
+  "verdict": "null"
+}

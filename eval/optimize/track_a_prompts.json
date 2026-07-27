@@ -1,0 +1,89 @@
+{
+  "baseline": {
+    "tokens_per_task": 369.6,
+    "tokens_per_turn": 154.0,
+    "words": 107.0
+  },
+  "candidates": [
+    {
+      "accuracy": null,
+      "accuracy_note": "not measurable under the simulated provider",
+      "name": "base",
+      "rationale": "The hand-written baseline. Short, with the situational detail pushed into skill documents that load on demand.",
+      "tokens_per_task": 369.6,
+      "tokens_per_turn": 154.0,
+      "tokens_vs_base_pct": 0.0,
+      "words": 107.0
+    },
+    {
+      "accuracy": null,
+      "accuracy_note": "not measurable under the simulated provider",
+      "name": "terse",
+      "rationale": "The same rules at minimum length. Tests whether the baseline's extra words are load-bearing or decorative.",
+      "tokens_per_task": 194.4,
+      "tokens_per_turn": 81.0,
+      "tokens_vs_base_pct": -47.4,
+      "words": 55.0
+    },
+    {
+      "accuracy": null,
+      "accuracy_note": "not measurable under the simulated provider",
+      "name": "checklist",
+      "rationale": "Explicit self-checks. Buys accuracy in the literature and costs tokens on every turn, which is the trade this track exists to price.",
+      "tokens_per_task": 492.0,
+      "tokens_per_turn": 205.0,
+      "tokens_vs_base_pct": 33.12,
+      "words": 146.0
+    },
+    {
+      "accuracy": null,
+      "accuracy_note": "not measurable under the simulated provider",
+      "name": "role_heavy",
+      "rationale": "Persona framing. Widely used, rarely measured, and the null result is the interesting one.",
+      "tokens_per_task": 492.0,
+      "tokens_per_turn": 205.0,
+      "tokens_vs_base_pct": 33.12,
+      "words": 143.0
+    },
+    {
+      "accuracy": null,
+      "accuracy_note": "not measurable under the simulated provider",
+      "name": "few_shot",
+      "rationale": "Two demonstrations. The classic lever, and the most expensive one per turn.",
+      "tokens_per_task": 568.8,
+      "tokens_per_turn": 237.0,
+      "tokens_vs_base_pct": 53.9,
+      "words": 156.0
+    }
+  ],
+  "chosen": {
+    "reason": "no accuracy signal is available, so the baseline stands. Selecting the cheapest candidate on cost alone would be optimising the only axis the simulator can see, which is exactly the mistake this project argues against.",
+    "variant": "base"
+  },
+  "cost_usd": 0.0,
+  "delta": {
+    "cheapest_candidate_tokens_per_turn": 81.0,
+    "dearest_candidate_tokens_per_turn": 237.0,
+    "spread_pct": 101.3
+  },
+  "headline": "Prompt compilation cannot be scored under the simulator: it samples behaviour from published model priors and never reads the prompt. What is measurable is the token cost, which ranges 81 to 237 tokens per turn, a 54% spread paid on every turn of every task.",
+  "lever": "the executor system prompt",
+  "notes": [
+    "PUBLISHED AS A NON-RESULT ON PURPOSE. The simulator decides behaviour from capability priors and does not read the prompt, so any accuracy difference reported here would be an artifact of the harness rather than a property of the prompts. Saying so is the finding.",
+    "The token costs are real and are paid on every turn of every task, which means a prompt that buys two points of accuracy at 60% more prefix may still lose on dollars per success. That trade is what a live run would settle.",
+    "DSPy would be the right tool and is deliberately not a dependency: every optimiser in it needs live scoring calls, which is the constraint this whole project is built around. The candidate pool, scoring interface and selection rule are here; only the scorer would change.",
+    "Registered the 5 candidates as selectable prompt bundles, so a pipeline YAML can switch variant without a code change."
+  ],
+  "optimised": {
+    "tokens_per_task": 369.6,
+    "tokens_per_turn": 154.0,
+    "words": 107.0
+  },
+  "provenance": "simulated",
+  "ran_at": "2026-07-27",
+  "reported_on": "test",
+  "title": "Prompt compilation",
+  "track": "track_a_prompts",
+  "tuned_on": "val",
+  "verdict": "unmeasurable"
+}
