@@ -59,6 +59,11 @@ from toolsmith.worlds.sandbox import WorldBuild
 #: Meta tools handled by the runtime rather than by the world.
 META_TOOLS = {"search_tools", "read_skill"}
 
+#: Modelled per-call tool latency, in milliseconds. Stands in for the network
+#: and database time a real service would spend, which the in-process sandbox
+#: does not.
+TOOL_LATENCY_MS = 25.0
+
 #: Exception types that mean the code is wrong, not the run.
 #:
 #: A run that fails is data: a provider timed out, a budget was exhausted, a
@@ -161,7 +166,12 @@ class Pipeline:
             record.behaviour = "error"
             self.bus.emit(EventType.RUN_FAILED, "run", error=record.error)
 
-        record.latency_s = time.perf_counter() - started
+        record.wall_clock_s = time.perf_counter() - started
+        # Published latency is modelled provider time, not measured wall-clock.
+        # See RunRecord.latency_s.
+        record.latency_s = sum(c.latency_s for c in record.model_calls) + sum(
+            c.latency_ms / 1000 for c in record.calls
+        )
         record.substitutions = self.deps.factory.substitutions
         self.bus.emit(
             EventType.RUN_FINISHED,
@@ -169,6 +179,7 @@ class Pipeline:
             behaviour=record.behaviour,
             usd=round(record.usd, 6),
             latency_s=round(record.latency_s, 3),
+            wall_clock_s=round(record.wall_clock_s, 3),
             turns=record.turns,
             escalated=record.escalated,
             calls=len(record.calls),
@@ -412,7 +423,6 @@ class Pipeline:
             return False
 
         # -- a real tool ----------------------------------------------------
-        started = time.perf_counter()
         spec = next((t for t in self.world.tools.values() if t.name == call.name), None)
         self.bus.emit(
             EventType.TOOL_CALLED,
@@ -435,7 +445,11 @@ class Pipeline:
 
         result = sandbox.call(call.name, call.arguments)
         call_record = sandbox.calls[-1]
-        latency_ms = (time.perf_counter() - started) * 1000
+        # Modelled, not measured: a sandboxed SQLite call takes microseconds
+        # here and tens of milliseconds against a real service, and either way
+        # the measured value is machine noise that would make every artifact
+        # differ between runs.
+        latency_ms = TOOL_LATENCY_MS + len(result.to_json()) / 1000.0
 
         # -- [G2] tool-result gate -----------------------------------------
         gate = self.tool_gate(result.to_json(), call_id=call.id, tool=call.name)

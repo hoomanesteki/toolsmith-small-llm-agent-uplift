@@ -232,3 +232,4 @@ node_modules/
 # Generated deterministically in seconds; the manifest, seal and sample are
 # committed instead. See src/toolsmith/tasks/store.py.
 data/tasks/tasks.jsonl
+eval/results/manifest.json
