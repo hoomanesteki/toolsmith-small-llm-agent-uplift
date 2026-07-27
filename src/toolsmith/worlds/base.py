@@ -36,6 +36,7 @@ import datetime as dt
 import enum
 import hashlib
 import json
+import random
 import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -277,6 +278,45 @@ class Entity:
 
 SeedFn = Callable[[sqlite3.Connection, int], None]
 PolicyFn = Callable[[sqlite3.Connection, str, dict[str, Any]], PolicyDecision]
+SamplerFn = Callable[[sqlite3.Connection, "random.Random", dict[str, Any]], "dict[str, Any] | None"]
+
+#: Keys every world must supply so that task templates can write natural
+#: prompts without knowing which domain they are generating for. This is the
+#: other half of the verb grammar: verbs make the PROGRAMS portable, the
+#: lexicon makes the QUESTIONS readable.
+#: Named row samplers a world must provide. Picking an *interesting* row
+#: genuinely needs domain knowledge (which order is refundable? which name is
+#: ambiguous?), so rather than pretend otherwise, the world declares it. Task
+#: templates then stay domain-free: they ask for "a record the policy will
+#: refuse" and phrase the question with the lexicon.
+REQUIRED_SAMPLERS: frozenset[str] = frozenset(
+    {
+        "principal",  # any actor
+        "record",  # any transaction
+        "record_done",  # a transaction in its terminal, actionable state
+        "privileged_allowed",  # arguments the policy function will approve
+        "privileged_blocked",  # arguments the policy function will refuse
+        "ambiguous_name",  # a query matching two or more principals
+        "missing_record_id",  # an id that does not exist
+        "policy_question",  # a policy lookup with a known correct answer
+        "metric",  # a metric worth aggregating
+    }
+)
+
+REQUIRED_LEXICON: frozenset[str] = frozenset(
+    {
+        "principal",
+        "principal_plural",
+        "principal_id",
+        "record",
+        "record_plural",
+        "record_id",
+        "case",
+        "case_plural",
+        "privileged_action",
+        "policy_noun",
+    }
+)
 
 
 @dataclass(slots=True)
@@ -295,6 +335,8 @@ class WorldSpec:
     entities: list[Entity]
     tools: dict[Verb, ToolSpec]
     policy: PolicyFn | None = None
+    lexicon: dict[str, str] = field(default_factory=dict)
+    samplers: dict[str, SamplerFn] = field(default_factory=dict)
     default_seed: int = 20260101
     notes: str = ""
 
@@ -308,6 +350,19 @@ class WorldSpec:
         for verb, tool in self.tools.items():
             if tool.verb is not verb:
                 raise ValueError(f"world {self.key!r} binds {verb} to a tool declaring {tool.verb}")
+        missing_samplers = REQUIRED_SAMPLERS - set(self.samplers)
+        if missing_samplers:
+            raise ValueError(
+                f"world {self.key!r} is missing samplers: "
+                f"{', '.join(sorted(missing_samplers))}. See worlds/base.REQUIRED_SAMPLERS."
+            )
+        missing_words = REQUIRED_LEXICON - set(self.lexicon)
+        if missing_words:
+            raise ValueError(
+                f"world {self.key!r} is missing lexicon entries: "
+                f"{', '.join(sorted(missing_words))}. Task templates need them to phrase "
+                "prompts in this domain's language."
+            )
         if any(t.privileged for t in self.tools.values()) and self.policy is None:
             raise ValueError(
                 f"world {self.key!r} exposes a privileged tool but declares no policy "
@@ -343,6 +398,29 @@ class WorldSpec:
 
     def privileged_tools(self) -> list[str]:
         return sorted(t.name for t in self.tools.values() if t.privileged)
+
+    def sample(
+        self, name: str, conn: sqlite3.Connection, rng: random.Random, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        """Draw one interesting row. Returns None when the seed has none."""
+        try:
+            sampler = self.samplers[name]
+        except KeyError:
+            raise KeyError(
+                f"world {self.key!r} has no sampler {name!r}; "
+                f"it defines {', '.join(sorted(self.samplers))}"
+            ) from None
+        return sampler(conn, rng, kwargs)
+
+    def word(self, key: str) -> str:
+        """This domain's word for a shared concept. See REQUIRED_LEXICON."""
+        try:
+            return self.lexicon[key]
+        except KeyError:
+            raise KeyError(
+                f"world {self.key!r} has no lexicon entry {key!r}; "
+                f"it defines {', '.join(sorted(self.lexicon))}"
+            ) from None
 
 
 # ------------------------------------------------------------------ digests --

@@ -26,6 +26,7 @@ from pathlib import Path
 from toolsmith.worlds._common import CALCULATOR_TOOL, TODAY_TOOL
 from toolsmith.worlds.base import Entity, Verb, WorldSpec
 from toolsmith.worlds.ops.policies import refund_policy
+from toolsmith.worlds.ops.samplers import SAMPLERS
 from toolsmith.worlds.ops.seed import seed_ops
 from toolsmith.worlds.ops.tools import TOOLS
 
@@ -112,6 +113,22 @@ WORLD = WorldSpec(
     seed=seed_ops,
     entities=ENTITIES,
     tools={**TOOLS, Verb.CALCULATOR: CALCULATOR_TOOL, Verb.TODAY: TODAY_TOOL},
+    samplers=SAMPLERS,
+    lexicon={
+        "principal": "customer",
+        "principal_plural": "customers",
+        "principal_id": "customer_id",
+        "record": "order",
+        "record_plural": "orders",
+        "record_id": "order_id",
+        "case": "support ticket",
+        "case_plural": "support tickets",
+        "privileged_action": "refund",
+        "policy_noun": "refund policy",
+        "amount_field": "amount_cents",
+        "principal_group": "tier",
+        "record_status_done": "delivered",
+    },
     policy=refund_policy,
     default_seed=20260101,
     notes=(

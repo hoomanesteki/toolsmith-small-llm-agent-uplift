@@ -45,7 +45,7 @@ BUILD_DIR = REPO_ROOT / "build" / "worlds"
 # ------------------------------------------------------------------ building --
 
 
-@dataclass(slots=True)
+@dataclass
 class WorldBuild:
     """The result of materialising a world at a given seed."""
 
@@ -54,6 +54,24 @@ class WorldBuild:
     path: Path
     digest: str
     row_counts: dict[str, int]
+    _image: bytes | None = None
+    """The serialised database, cached on first use.
+
+    A task run needs a private copy of the world, and the obvious way to get
+    one is to reopen the file and back it up into memory. At three worlds by
+    eight thousand tasks that is twenty-four thousand file opens. Serialising
+    once and deserialising per task is roughly an order of magnitude faster and
+    is byte-identical, which the digest test asserts.
+    """
+
+    def image(self) -> bytes:
+        if self._image is None:
+            source = sqlite3.connect(self.path)
+            try:
+                self._image = source.serialize()
+            finally:
+                source.close()
+        return self._image
 
     @property
     def total_rows(self) -> int:
@@ -188,12 +206,8 @@ class Sandbox:
         self.close()
 
     def open(self) -> Sandbox:
-        source = sqlite3.connect(self.build.path)
-        try:
-            self._conn = sqlite3.connect(":memory:")
-            source.backup(self._conn)
-        finally:
-            source.close()
+        self._conn = sqlite3.connect(":memory:")
+        self._conn.deserialize(self.build.image())
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._before = snapshot(self._conn)
         return self

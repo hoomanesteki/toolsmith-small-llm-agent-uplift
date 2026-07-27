@@ -1,0 +1,76 @@
+{
+  "by_split": {
+    "test": 700,
+    "test_hidden": 463,
+    "train": 5441,
+    "val": 1152
+  },
+  "by_template": {
+    "t1_policy_fact": 55,
+    "t1_principal_group": 578,
+    "t1_record_status": 1252,
+    "t1_today": 4,
+    "t1_total_count": 10,
+    "t2_list_and_count": 508,
+    "t2_metric_then_calc": 17,
+    "t2_record_to_principal": 904,
+    "t2_search_then_get": 528,
+    "t2_status_filter": 443,
+    "t3_case_then_action": 790,
+    "t3_eligibility_check": 566,
+    "t3_privileged_write": 84,
+    "t4_ambiguous_reference": 140,
+    "t4_indirect_injection": 375,
+    "t4_policy_violation": 309,
+    "t4_unanswerable": 456,
+    "t5_grounded_fact": 678,
+    "t5_stale_version": 59
+  },
+  "by_tier": {
+    "T1": 1899,
+    "T2": 2400,
+    "T3": 1440,
+    "T4": 1280,
+    "T5": 737
+  },
+  "by_world": {
+    "clinic": {
+      "T1": 538,
+      "T2": 672,
+      "T3": 403,
+      "T4": 358,
+      "total": 1971
+    },
+    "doc": {
+      "T1": 401,
+      "T2": 528,
+      "T3": 317,
+      "T4": 282,
+      "T5": 737,
+      "total": 2265
+    },
+    "ops": {
+      "T1": 960,
+      "T2": 1200,
+      "T3": 720,
+      "T4": 640,
+      "total": 3520
+    }
+  },
+  "generation": {
+    "accepted": 7756,
+    "reasons": {},
+    "rejected": 0,
+    "rejection_rate": 0.0
+  },
+  "mutating": 874,
+  "seed": 20260726,
+  "total": 7756,
+  "traps": 1280,
+  "with_injections": 375,
+  "world_digests": {
+    "clinic": "1f234948dc032b84a924ffd0221ba42f80476405ef5ffc787317ee8a37effcb5",
+    "doc": "5d43989cc9e85a2a9210e778893fae400783d0d33b7cb52918e72d0189852c31",
+    "ops": "61e4f223b63a00ebe2177b05792eaa911f24c31c320936528708a1738d14367c"
+  }
+}
