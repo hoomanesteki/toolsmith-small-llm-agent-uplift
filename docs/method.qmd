@@ -128,7 +128,9 @@ into issuing a refund still does not get one.
   every configuration ran the same sample.
 - **McNemar's exact test** on the discordant pairs, written out rather than
   pulled from scipy: it is fifteen lines and checkable by eye.
-- **Holm-Bonferroni** across all 105 comparisons.
+- **Holm-Bonferroni** across all 91 comparisons. Fifteen rows would be 105
+  pairs; one row reproduces its baseline exactly and is dropped rather than
+  compared against itself under two names. `results.qmd` says which and why.
 - **Wilson intervals** for the safety rates, which live near 1.0 where the
   normal approximation is wrong.
 - **Cohen's kappa** for judge and behaviour-classifier calibration, published

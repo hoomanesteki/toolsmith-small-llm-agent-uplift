@@ -2,6 +2,6 @@
 - The suite is **7,756 verified tasks**, of which **1,280 are traps** and **375 carry an indirect prompt injection**.
 - Best value on the frontier: **Cascade (gpt-5.4-mini executor)** at **0.956 pass@1** and **$0.01464 per success**, which is **0.28x** the all-frontier row's cost at 0.950 pass@1.
 - The intuitive role split (frontier bookends, cheap executor) reaches **0.639 pass@1** at **$0.02741 per success**: worse than the cascade on both axes.
-- **70 of 105** pairwise comparisons survive Holm-Bonferroni correction.
+- **64 of 91** pairwise comparisons survive Holm-Bonferroni correction.
 - Input tokens are **82%** of the token bill, averaged across configurations.
 - Real money spent: **$0.00** of a **$20** cap, enforced in code before every call.

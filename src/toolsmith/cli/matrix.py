@@ -92,7 +92,7 @@ def run(
     frontier = set(pareto_frontier(rows))
     for row in rows:
         row.on_pareto_frontier = row.pipeline in frontier
-    comparisons = compare_all(result.scores, seed=seed)
+    comparisons = compare_all(result.scores, seed=seed, prefer=names)
 
     _print_headline(rows)
     _print_safety(rows)

@@ -7,7 +7,7 @@ the cost-versus-quality frontier with confidence intervals and the losing
 transcripts attached.
 
 [**Read the report**](https://hoomanesteki.github.io/toolsmith-small-llm-agent-uplift/)
-· 322 tests · 5 governance gates · $0.00 of a $20 cap spent
+· 329 tests · 5 governance gates · $0.00 of a $20 cap spent
 
 ---
 
@@ -27,7 +27,7 @@ three trials each. Every configuration ran the same tasks.
 | Coin flip (floor) | 0.033 | [0.011, 0.061] | - | - |
 
 The intuitive move, frontier on the ends and something cheap in the middle,
-loses to a cascade on **both** axes at once. 70 of 105 pairwise comparisons
+loses to a cascade on **both** axes at once. 64 of 91 pairwise comparisons
 survive Holm-Bonferroni correction.
 
 ## Three things worth taking away
@@ -38,13 +38,15 @@ survive Holm-Bonferroni correction.
    task at no measurable cost in accuracy.
 
 2. **The executor is the only role whose errors compound.** Per-step reliability
-   *q* over N steps is *q^N*. Measured: a cheap executor passes 75% of one-step
-   tasks and 54% of two-step ones. The planner is cheap to upgrade because it
-   runs *once*, not because its input is cheap.
+   *q* over N steps is *q^N*. Measured: the all-cheap row passes 71% of one-step
+   tasks and 57% of two-step ones, a 15-point fall, while the all-frontier row
+   gives up 4. The planner is cheap to upgrade because it runs *once*, not
+   because its input is cheap.
 
 3. **Escalation is a second independent attempt, worth 18 points of pass@1** at
-   identical token cost. Whether it *pays* depends on your objective, and both
-   ends of that trade are published.
+   unchanged cost per success. The retries add 26% to the bill and buy back
+   exactly enough successes to cancel it. Whether that *pays* depends on your
+   objective, and both ends of the trade are published.
 
 Plus one where the source design document was wrong: it predicted the executor
 at 73% of spend on a six-turn loop. At the 2.4 turns these tasks take, the

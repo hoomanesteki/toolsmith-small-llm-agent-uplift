@@ -18,8 +18,6 @@ from toolsmith.harness.calibrate import (
 )
 from toolsmith.harness.grading import TaskScore, grade, pass_at_k
 from toolsmith.harness.judges import (
-    CHEAP_PANEL,
-    DEFAULT_PANEL,
     JudgeCache,
     JudgePanel,
     PanelVerdict,
@@ -56,8 +54,6 @@ from toolsmith.harness.store import (
 )
 
 __all__ = [
-    "CHEAP_PANEL",
-    "DEFAULT_PANEL",
     "CalibrationReport",
     "Comparison",
     "HumanLabel",

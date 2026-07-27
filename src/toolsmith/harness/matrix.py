@@ -19,6 +19,7 @@ when nothing else is both cheaper per success and at least as reliable.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from itertools import combinations
 from typing import Any
@@ -76,6 +77,7 @@ class PipelineRow:
     over_refusal_rate: float = 0.0
     injection_resistance: float | None = None
     injection_resistance_ci: tuple[float, float] | None = None
+    injection_attempt_rate: float | None = None
     policy_violation_rate: float = 0.0
 
     # -- grounding ----------------------------------------------------------
@@ -190,6 +192,13 @@ def summarise_pipeline(
         resisted = sum(bool(s.injection_resisted) for s in injected)
         row.injection_resistance = resisted / len(injected)
         row.injection_resistance_ci = wilson_interval(resisted, len(injected))
+        # Published beside resistance because the two together say something
+        # neither says alone: how often the agent reached for the planted
+        # action, and how much of the distance to a clean world the gate had to
+        # cover on its own.
+        row.injection_attempt_rate = sum(bool(s.injection_attempted) for s in injected) / len(
+            injected
+        )
 
     grounded = [s for s in first_trial if s.citation_recall is not None]
     if grounded:
@@ -262,13 +271,55 @@ class Comparison:
 
 
 def compare_all(
-    scores: list[TaskScore], alpha: float = 0.05, seed: int = 20260726
+    scores: list[TaskScore],
+    alpha: float = 0.05,
+    seed: int = 20260726,
+    prefer: Sequence[str] = (),
 ) -> list[Comparison]:
-    """Every pairwise comparison, paired and multiplicity-corrected."""
+    """Every pairwise comparison, paired and multiplicity-corrected.
+
+    A configuration that is indistinguishable from one already in the set, on
+    both outcome and cost for every task, is dropped before the pairs are
+    formed. `ablation_no_compaction` is one: it turns off a mechanism that never
+    engages, because trajectories on this workload peak around twelve thousand
+    tokens and the compaction threshold sits far above that, so it reproduces
+    the baseline exactly. Left in, it contributed fourteen pairs to the
+    corrected family, each of them a configuration compared against itself under
+    two names, which inflates the denominator Holm divides by and makes the
+    surviving comparisons look more selective than they were.
+
+    Cost is part of the fingerprint on purpose. `ablation_no_tool_search` has
+    the same per-task outcomes as the baseline and costs 31% more, because
+    putting every tool schema in the prompt buys no accuracy under a simulator
+    that never reads the prompt. That is a real configuration with a real
+    result, and matching accuracy is not a reason to hide it.
+    """
     by_pipeline: dict[str, dict[str, bool]] = {}
+    fingerprints: dict[str, dict[str, tuple[bool, float]]] = {}
     for score in scores:
         if score.trial == 0:
             by_pipeline.setdefault(score.pipeline, {})[score.task_id] = score.passed
+            fingerprints.setdefault(score.pipeline, {})[score.task_id] = (
+                score.passed,
+                round(score.usd, 8),
+            )
+
+    # Which of a duplicate pair survives matters as much as the count. `prefer`
+    # carries the order `configs/pipelines/matrix.yaml` declares, which puts a
+    # baseline ahead of the ablations derived from it; without it the tie broke
+    # alphabetically and discarded `cascade_default` in favour of
+    # `ablation_no_compaction`, keeping the right number of rows and the wrong
+    # one of the two.
+    rank = {name: i for i, name in enumerate(prefer)}
+    order = sorted(by_pipeline, key=lambda n: (rank.get(n, len(rank)), n))
+
+    seen: dict[tuple[tuple[str, tuple[bool, float]], ...], str] = {}
+    for name in order:
+        fingerprint = tuple(sorted(fingerprints[name].items()))
+        if fingerprint in seen:
+            del by_pipeline[name]
+        else:
+            seen[fingerprint] = name
 
     comparisons: list[Comparison] = []
     p_values: dict[str, float] = {}

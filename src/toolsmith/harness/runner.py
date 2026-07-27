@@ -6,10 +6,13 @@ every row. That is what licenses the paired bootstrap and McNemar's test, and it
 is the difference between "cascade beats frontier" and "cascade got an easier
 sample".
 
-Trials are run at two temperatures. At 0.0 the system is as deterministic as the
-provider allows and ``pass^k`` measures the harness; at 0.7 it measures the
-model. Reporting only the first is the more flattering choice and the less
-informative one.
+Every trial runs at temperature 0.0 and differs only in its seed, so ``pass^k``
+here measures the harness rather than the model. Sampling at a second
+temperature was specified, and the field for it sat in ``RunConfig`` unread for
+long enough to be worth saying out loud: under the deterministic simulator a
+temperature knob would change nothing, because behaviour is drawn from
+capability priors and not from a sampler. It is a live-run measurement, and
+claiming it here would have been the flattering version of an unmeasured thing.
 """
 
 from __future__ import annotations
@@ -23,8 +26,6 @@ from typing import Any
 from toolsmith.config import Registry, load_registry
 from toolsmith.harness.grading import TaskScore, grade
 from toolsmith.harness.judges import (
-    CHEAP_PANEL,
-    DEFAULT_PANEL,
     JudgeCache,
     JudgePanel,
     PanelVerdict,
@@ -48,7 +49,6 @@ class RunConfig:
     split: str = "test"
     n: int = MIN_SAMPLE
     trials: int = 3
-    temperatures: tuple[float, ...] = (0.0, 0.7)
     provider_mode: ProviderMode = "simulated"
     judge: bool = True
     cheap_judge_ablation: bool = True
@@ -140,7 +140,14 @@ class MatrixRunner:
 
         rubric = self.registry.rubrics.get("default")
         panel = (
-            JudgePanel(self.registry, self.factory, self.ledger, rubric, DEFAULT_PANEL, self.cache)
+            JudgePanel(
+                self.registry,
+                self.factory,
+                self.ledger,
+                rubric,
+                self.registry.panels.get("default", ()),
+                self.cache,
+            )
             if (self.config.judge and rubric)
             else None
         )
@@ -150,7 +157,7 @@ class MatrixRunner:
                 self.factory,
                 self.ledger,
                 self.registry.rubrics.get("cheap", rubric),
-                CHEAP_PANEL,
+                self.registry.panels.get("cheap", ()),
                 self.cache,
             )
             if (self.config.judge and self.config.cheap_judge_ablation and rubric)
@@ -200,11 +207,3 @@ class MatrixRunner:
         result.substitutions = self.factory.substitutions
         result.wall_clock_s = time.perf_counter() - started
         return result
-
-    @property
-    def temperature_note(self) -> str:
-        return (
-            "Trials cycle through the configured temperatures. At 0.0 pass^k measures "
-            "the harness; at 0.7 it measures the model. Reporting only the first would "
-            "be the more flattering choice and the less informative one."
-        )

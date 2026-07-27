@@ -472,12 +472,38 @@ def add_label(payload: dict[str, Any]) -> dict[str, Any]:
     return {"ok": True, "written": str(path), "total_labels": len(_read_labels())}
 
 
+def _answers_by_run() -> dict[tuple[str, str], str]:
+    """The answer text a labeller actually read, keyed by (task, pipeline).
+
+    Read back from the committed traces rather than from a stored verdict, so
+    the classifier is re-run on the same words the person saw. Filenames are
+    ``{pipeline}__{task_id}__{trial}.jsonl`` and the text is on the ``answer``
+    event.
+    """
+    from toolsmith.harness.store import TRACES_DIR
+
+    answers: dict[tuple[str, str], str] = {}
+    for path in sorted(TRACES_DIR.glob("*__*__*.jsonl")):
+        pipeline, task_id, _ = path.stem.split("__", 2)
+        for line in path.read_text(encoding="utf-8").splitlines():
+            event = json.loads(line)
+            if event.get("type") == "answer":
+                answers[(task_id, pipeline)] = str(event.get("data", {}).get("text", ""))
+    return answers
+
+
 @app.get("/api/calibration")
 def calibration() -> dict[str, Any]:
+    """Agreement between the behaviour classifier and the humans who labelled it.
+
+    This used to pass an empty answers map, so every label was skipped for want
+    of text to re-classify and the endpoint reported UNCALIBRATED no matter how
+    many labels the review screen had collected. The whole point of the screen
+    is that the number moves when a person does the work.
+    """
     from toolsmith.harness.calibrate import calibrate_behaviour, read_labels
 
-    labels = read_labels()
-    return calibrate_behaviour(labels, {}).to_dict()
+    return calibrate_behaviour(read_labels(), _answers_by_run()).to_dict()
 
 
 # ------------------------------------------------------------------ stream --

@@ -89,7 +89,10 @@ export async function flow(host) {
       { taskId: chosen.task_id, pipeline: chosen.pipeline, provider: health.live_capable.length ? "auto" : "simulated" },
       (event) => { events.push(event); view.push(event); },
       () => view.finish(),
-      () => view.finish(),
+      /* Not view.finish(). A stream that dies mid-run used to report "done"
+         beside a transcript that stops in the middle, which is the one outcome
+         a viewer cannot tell from success. */
+      (error) => view.fail(error, events.length),
     );
   };
 
@@ -257,7 +260,25 @@ function render(host, events, delay, { source, streaming = false } = {}) {
   }
 
   if (streaming) {
-    return { push, finish: () => { statusEl.textContent = "done"; drawTimeline(); } };
+    return {
+      push,
+      finish: () => { statusEl.textContent = "done"; drawTimeline(); },
+      fail: (error, seen) => {
+        statusEl.textContent = seen ? `interrupted after ${seen} events` : "failed to start";
+        statusEl.classList.add("bad");
+        drawTimeline();
+        stage.appendChild(
+          h("div", { class: "banner bad" },
+            h("span", {}, "!"),
+            h("div", {},
+              h("strong", {}, "The run stopped early. "),
+              seen
+                ? "What you see below is everything that arrived before the connection dropped, not a finished run."
+                : `Nothing arrived. ${error?.message ?? "The server closed the connection."}`),
+          ),
+        );
+      },
+    };
   }
   return replay(events, push, drawTimeline, delay);
 }

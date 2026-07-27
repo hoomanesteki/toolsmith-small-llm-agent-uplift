@@ -298,6 +298,7 @@ def test_a_judge_never_grades_its_own_family(registry):
         ProviderFactory(registry, "simulated"),
         CostLedger(run_id="t"),
         registry.rubrics["default"],
+        registry.panels["default"],
     )
     seats, dropped = panel.eligible_seats({"groq-oss-120b", "claude-opus-5"})
     assert "groq-oss-120b" not in seats
@@ -311,6 +312,7 @@ def test_judge_cache_makes_a_rerun_free(registry, tmp_path, tasks):
         ProviderFactory(registry, "simulated"),
         CostLedger(run_id="t"),
         registry.rubrics["default"],
+        registry.panels["default"],
         cache=cache,
     )
     task = next(t for t in tasks if t.world == "ops")

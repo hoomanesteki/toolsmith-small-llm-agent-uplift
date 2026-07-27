@@ -13,7 +13,6 @@ misled.
 
 from __future__ import annotations
 
-import datetime as dt
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -148,6 +147,9 @@ def safety_table(ctx: ReportContext) -> str:
                 row["label"],
                 f"{row['abstain_recall']:.3f}" if row["abstain_recall"] is not None else "-",
                 f"{row['over_refusal_rate']:.3f}",
+                f"{row['injection_attempt_rate']:.3f}"
+                if row.get("injection_attempt_rate") is not None
+                else "-",
                 f"{row['injection_resistance']:.3f}"
                 if row["injection_resistance"] is not None
                 else "-",
@@ -160,13 +162,50 @@ def safety_table(ctx: ReportContext) -> str:
             "Configuration",
             "Abstain recall",
             "Over-refusal",
+            "Reached for the injection",
             "Injection resisted",
             "Unsanctioned actions",
             "Citation recall",
         ],
         rows,
-        ["left", "right", "right", "right", "right", "right"],
+        ["left", "right", "right", "right", "right", "right", "right"],
     )
+
+
+#: The two executors the compounding argument contrasts. Cheap enough that q^N
+#: bites, and strong enough that it does not.
+COMPOUNDING_ROWS = ("budget_floor_oss20b", "frontier_all_opus")
+
+
+def compounding_table(ctx: ReportContext) -> str:
+    """pass@1 by gold-program length: the shape of q^N, measured.
+
+    Hand-typed until it was found to be wrong. The frontier column read
+    "~1.00" and "~0.99" against measured rates of 0.982 and 0.944, which is
+    two points and five points of rounding in the direction that flatters the
+    argument, inside the section whose stated purpose is that every claim in it
+    is measured. Approximate numbers in a table about compounding error is the
+    joke writing itself.
+    """
+    lengths = sorted(
+        {int(s.calls_oracle) for s in ctx.scores if 1 <= s.calls_oracle <= 3 and s.trial == 0}
+    )
+    rows = []
+    for length in lengths:
+        cells = []
+        for pipeline in COMPOUNDING_ROWS:
+            hits = [
+                s.passed
+                for s in ctx.scores
+                if s.trial == 0 and s.pipeline == pipeline and int(s.calls_oracle) == length
+            ]
+            cells.append(f"{sum(hits) / len(hits):.3f}" if len(hits) >= 20 else "-")
+        if all(c == "-" for c in cells):
+            continue  # too few tasks at this length to say anything
+        rows.append([f"{length} step" if length == 1 else f"{length} steps", *cells])
+
+    labels = [(ctx.row(p) or {}).get("label", p).split("(")[0].strip() for p in COMPOUNDING_ROWS]
+    return _md_table(["Gold program", *labels], rows, ["left", "right", "right"])
 
 
 def tier_table(ctx: ReportContext) -> str:
@@ -331,8 +370,13 @@ def key_numbers(ctx: ReportContext) -> dict[str, Any]:
     cascade = ctx.row("cascade_default")
     comparisons = ctx.matrix.get("comparisons", [])
 
+    # No date here. It was `dt.date.today()`, in a file the reproduce job
+    # byte-compares against a fresh run, which means the build was scheduled to
+    # start failing at the next UTC midnight and keep failing until someone
+    # committed a new date. The determinism test even popped the field before
+    # comparing, so the volatility was known and worked around rather than
+    # removed. When to regenerate is a question for git log.
     return {
-        "generated_on": dt.date.today().isoformat(),
         "n_runs": sum(r["n_runs"] for r in ctx.rows),
         "n_configs": len(ctx.rows),
         "n_tasks": ctx.manifest.get("n_tasks"),
@@ -425,6 +469,7 @@ def build(generated: Path | None = None, data: Path | None = None) -> dict[str, 
     # -- tables -------------------------------------------------------------
     write("headline.md", headline_table(ctx))
     write("safety.md", safety_table(ctx))
+    write("compounding.md", compounding_table(ctx))
     write("by-tier.md", tier_table(ctx))
     write("by-world.md", world_table(ctx))
     write("comparisons.md", comparison_table(ctx))

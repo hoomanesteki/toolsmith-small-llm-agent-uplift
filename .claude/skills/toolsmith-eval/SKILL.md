@@ -34,7 +34,7 @@ Then `toolsmith matrix run` and it appears everywhere.
   configurations differently and dishonestly.
 - **Overlapping intervals mean no established difference**, whatever the point
   estimates say. Check `matrix compare` for the McNemar p-value.
-- **70 of 105 comparisons survive Holm correction.** An uncorrected comparison
+- **64 of 91 comparisons survive Holm correction.** An uncorrected comparison
   from a 105-family is not evidence.
 - **`pass^k` is harsher than mean pass@1** on purpose. A system that succeeds
   two times in three is not deployable, and averaging hides that.

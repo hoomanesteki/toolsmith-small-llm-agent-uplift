@@ -37,8 +37,8 @@ trajectory on any machine, forever.
 
 ## Consequences
 
-**What we get.** `make all` runs end to end in about a minute, for nothing, on a
-fresh checkout with no keys. CI asserts that the committed artifacts are
+**What we get.** `make all` runs end to end in about six minutes, for nothing,
+on a fresh checkout with no keys. CI asserts that the committed artifacts are
 byte-identical to a fresh run, which means the statistics code is actually
 exercised on every commit rather than merely imported.
 

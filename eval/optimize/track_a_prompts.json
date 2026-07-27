@@ -64,9 +64,10 @@
   "delta": {
     "cheapest_candidate_tokens_per_turn": 81.0,
     "dearest_candidate_tokens_per_turn": 237.0,
+    "dearest_over_cheapest": 2.926,
     "spread_pct": 101.3
   },
-  "headline": "Prompt compilation cannot be scored under the simulator: it samples behaviour from published model priors and never reads the prompt. What is measurable is the token cost, which ranges 81 to 237 tokens per turn, a 54% spread paid on every turn of every task.",
+  "headline": "Prompt compilation cannot be scored under the simulator: it samples behaviour from published model priors and never reads the prompt. What is measurable is the token cost, which ranges 81 to 237 tokens per turn. The dearest prompt costs 2.9x the cheapest, on every turn of every task.",
   "lever": "the executor system prompt",
   "notes": [
     "PUBLISHED AS A NON-RESULT ON PURPOSE. The simulator decides behaviour from capability priors and does not read the prompt, so any accuracy difference reported here would be an artifact of the harness rather than a property of the prompts. Saying so is the finding.",
@@ -80,7 +81,6 @@
     "words": 107.0
   },
   "provenance": "simulated",
-  "ran_at": "2026-07-27",
   "reported_on": "test",
   "title": "Prompt compilation",
   "track": "track_a_prompts",

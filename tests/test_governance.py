@@ -202,3 +202,39 @@ def test_a_project_that_has_generated_nothing_skips_rather_than_passes(tmp_path,
         assert result.exit_code == 0
         assert "SKIP" in result.output
         assert "PASS" not in result.output
+
+
+def test_the_agnosticism_gate_catches_a_registry_key_not_just_a_vendor_id(tmp_path):
+    """The hole that let a hardcoded judge panel sit in src/ and score zero.
+
+    `configs/models.yaml` gives every model two names: the key the repository
+    uses (`groq-oss-120b`) and the string the vendor answers to
+    (`openai/gpt-oss-120b`). The gate checked only the second, so three models
+    named by key in `harness/judges.py` passed it, and swapping the panel that
+    grades every published qualitative number was a Python edit while the README
+    said it was a YAML edit. Both names are portability leaks.
+    """
+    registry = load_registry()
+    key = next(k for k, spec in registry.models.items() if spec.model_id != k and k != "coinflip")
+
+    source = tmp_path / "src" / "toolsmith"
+    source.mkdir(parents=True)
+    (source / "offender.py").write_text(f'PANEL = ("{key}",)\n', encoding="utf-8")
+
+    offenders, _, _ = scan_source(root=tmp_path, registry=registry)
+    assert [o.model_id for o in offenders] == [key]
+
+
+def test_the_agnosticism_gate_still_allows_documentation_to_name_models(tmp_path):
+    """Docstrings may name models. Code may not. That distinction is the gate."""
+    registry = load_registry()
+    key = next(k for k in registry.models if k != "coinflip")
+
+    source = tmp_path / "src" / "toolsmith"
+    source.mkdir(parents=True)
+    (source / "documented.py").write_text(
+        f'"""Prefer {key} for the executor."""\n', encoding="utf-8"
+    )
+
+    offenders, _, _ = scan_source(root=tmp_path, registry=registry)
+    assert offenders == []
