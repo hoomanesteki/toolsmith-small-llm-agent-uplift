@@ -1,0 +1,1 @@
+Current state: **$0.00** spent against a **$20** cap. Buying the published matrix from the vendors, at the catalogue prices in `configs/models.yaml`, would have cost **$121.68**. That is a useful number in its own right: it is the price of this evidence, and it is why the simulator is a provider rather than a test fixture.

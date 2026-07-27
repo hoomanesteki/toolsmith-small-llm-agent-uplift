@@ -347,7 +347,12 @@ def key_numbers(ctx: ReportContext) -> dict[str, Any]:
         "world_digests": ctx.manifest.get("world_digests", {}),
         "live_usd": ctx.ledger.get("live_usd", 0.0),
         "cap_usd": ctx.ledger.get("cap_usd", 20.0),
-        "simulated_usd": ctx.ledger.get("by_provenance", {}).get("simulated", 0.0),
+        # Read from the run manifest, not the ledger CSV. The CSV holds live
+        # rows only, and even before that change it accumulated across every
+        # run ever made on the machine, so its simulated total answered "what
+        # has this laptop pretended to spend" rather than the question the
+        # report asks: what would buying the published matrix have cost.
+        "simulated_usd": ctx.manifest.get("ledger", {}).get("usd_simulated", 0.0),
         "comparisons_total": len(comparisons),
         "comparisons_significant": sum(1 for c in comparisons if c["significant_after_holm"]),
         "best": _row_facts(best),
@@ -512,6 +517,7 @@ def build(generated: Path | None = None, data: Path | None = None) -> dict[str, 
 
     # -- the prose fragments that quote numbers -----------------------------
     write("key-numbers.md", _key_numbers_md(numbers))
+    write("budget-state.md", _budget_state_md(numbers))
     return written
 
 
@@ -548,3 +554,20 @@ def _key_numbers_md(n: dict[str, Any]) -> str:
         "before every call."
     )
     return "\n".join(lines) + "\n"
+
+
+def _budget_state_md(n: dict[str, Any]) -> str:
+    """The two sentences the governance page used to hardcode.
+
+    They were hand-written, and by the time anyone noticed they quoted a
+    figure from a ledger that had since been rewritten. A page about
+    reproducibility is the last place a stale number belongs, so the
+    sentences are now generated from the same file as the tables above them.
+    """
+    return (
+        f"Current state: **${n['live_usd']:.2f}** spent against a **${n['cap_usd']:.0f}** cap. "
+        f"Buying the published matrix from the vendors, at the catalogue prices in "
+        f"`configs/models.yaml`, would have cost **${n['simulated_usd']:,.2f}**. That is a "
+        "useful number in its own right: it is the price of this evidence, and it is why the "
+        "simulator is a provider rather than a test fixture.\n"
+    )

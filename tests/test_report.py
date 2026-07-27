@@ -67,6 +67,32 @@ def test_every_fragment_the_site_includes_exists():
         assert (DOCS / target).exists(), f"{target} is included but not generated"
 
 
+def test_no_page_hardcodes_a_dollar_figure_of_its_own(ctx, numbers):
+    """Every priced claim in the prose must be one the results file still makes.
+
+    This caught a real one. The governance page said the published matrix would
+    have cost $852.16 to buy, hand-typed from a ledger that was later rewritten
+    to hold live rows only. The figure survived a rename, a schema change and a
+    full reproducibility pass, because nothing was watching it. A page arguing
+    that no measured value may be typed by hand is the worst possible place for
+    a measured value typed by hand.
+    """
+    allowed = {f"${numbers['live_usd']:.2f}", f"${numbers['simulated_usd']:,.2f}"}
+    allowed |= {
+        f"${row['usd_per_success']:.5f}"
+        for row in ctx.rows
+        if row.get("usd_per_success") is not None
+    }
+    pages = [*DOCS.glob("*.qmd"), *DOCS.glob("cards/*.qmd"), REPO_ROOT / "README.md"]
+    for page in pages:
+        text = page.read_text(encoding="utf-8")
+        for found in re.findall(r"\$[0-9][0-9,]*\.[0-9]+", text):
+            assert found in allowed, (
+                f"{page.name} quotes {found}, which no longer appears in the results. "
+                "Move it into a generated fragment rather than correcting it by hand."
+            )
+
+
 def test_the_headline_table_ranks_by_cost_per_success(ctx):
     from toolsmith.report.build import headline_table
 
