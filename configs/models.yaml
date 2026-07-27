@@ -1,0 +1,456 @@
+# =============================================================================
+# configs/models.yaml  -  the file that makes ToolSmith model-agnostic
+# =============================================================================
+#
+# Every model the system can reach is declared here and nowhere else. Swapping
+# an executor from `groq-oss-20b` to `claude-opus-5` is an edit to a pipeline
+# YAML, never a code change. `tests/test_model_agnostic.py` proves it by
+# asserting that no model identifier appears in any .py file under src/.
+#
+# FIELD NOTES
+#   verified_on          Date the price and model id were checked against the
+#                        provider's live docs. A null means UNVERIFIED: the
+#                        report flags the row and `toolsmith probe models`
+#                        should be run before publishing anything using it.
+#   retires_on           Known shutdown date. CI warns inside 30 days.
+#   training_data_use    Read by the license firewall. `forbidden` models may
+#                        never appear as `generator_model` on a training row.
+#   family               The reviewer may never share a family with the
+#                        executor. Enforced by Registry.assert_reviewer_independence.
+#   sim.source           card | spec | interpolated. Priors for the offline
+#                        simulator, never a ToolSmith measurement.
+#
+# PRICES ARE PER MILLION TOKENS, USD.
+# =============================================================================
+
+models:
+
+  # ---------------------------------------------------------------------------
+  # Groq  -  the primary live provider. Inference only: Groq offers no
+  # fine-tuning, and its LoRA inference is enterprise-gated to a model that
+  # retires 2026-08-16.
+  # ---------------------------------------------------------------------------
+
+  groq-oss-20b:
+    provider: groq
+    model_id: openai/gpt-oss-20b
+    price_in_per_m: 0.075
+    price_out_per_m: 0.30
+    cache_read_discount: 0.50      # Groq prompt caching, automatic, gpt-oss only
+    batch_discount: 0.50           # does NOT stack with caching
+    cache_ttl_s: 7200
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: false}
+    tier: cheap
+    family: openai-oss
+    training_data_use: allowed     # Groq ToS 6.3(e): competing-use only, no output-training ban
+    verified_on: 2026-07-26
+    notes: "1,000 TPS. Strict schema support. The workhorse of the eval matrix."
+    sim:
+      source: spec
+      tau2: 0.602
+      tok_per_s: 938
+      ttft_s: 0.77
+      json_valid_rate: 0.985
+      tool_select_acc: 0.881
+      param_acc: 0.892
+      injection_resist: 0.72
+      abstain_skill: 0.55
+      verbosity: 0.95
+
+  groq-oss-120b:
+    provider: groq
+    model_id: openai/gpt-oss-120b
+    price_in_per_m: 0.15
+    price_out_per_m: 0.60
+    cache_read_discount: 0.50
+    batch_discount: 0.50
+    cache_ttl_s: 7200
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: false}
+    tier: mid
+    family: openai-oss
+    training_data_use: allowed
+    verified_on: 2026-07-26
+    notes: "500 TPS. The cheap-side verifier in the winning cascade."
+    sim:
+      source: spec
+      tau2: 0.658
+      tok_per_s: 480
+      ttft_s: 0.71
+      json_valid_rate: 0.991
+      tool_select_acc: 0.901
+      param_acc: 0.912
+      injection_resist: 0.79
+      abstain_skill: 0.63
+      verbosity: 1.0
+
+  groq-qwen36-27b:
+    provider: groq
+    model_id: qwen/qwen3.6-27b
+    price_in_per_m: 0.60
+    price_out_per_m: 3.00
+    cache_read_discount: 0.0       # caching is gpt-oss only; this is a forced cache miss
+    batch_discount: 0.50
+    supports: {tools: true, strict_json: false, reasoning: true, parallel_tools: true}
+    tier: mid
+    family: qwen
+    training_data_use: allowed
+    verified_on: 2026-07-26
+    notes: "Preview. json_object mode only, no strict schema. Parallel tool calls."
+    sim:
+      source: spec
+      tau2: 0.790
+      tok_per_s: 500
+      ttft_s: 0.80
+      json_valid_rate: 0.962       # json_object, not strict schema: more repair loops
+      tool_select_acc: 0.943
+      param_acc: 0.947
+      injection_resist: 0.83
+      abstain_skill: 0.71
+      verbosity: 1.1
+
+  groq-safeguard-20b:
+    provider: groq
+    model_id: openai/gpt-oss-safeguard-20b
+    price_in_per_m: 0.075
+    price_out_per_m: 0.30
+    cache_read_discount: 0.50
+    supports: {tools: false, strict_json: false, reasoning: true, parallel_tools: false}
+    tier: guard
+    family: openai-oss
+    training_data_use: allowed
+    verified_on: 2026-07-26
+    notes: "Policy and topical classification at the input gate. Best-effort JSON."
+    sim: {source: spec, tok_per_s: 938, ttft_s: 0.77, verbosity: 0.15}
+
+  groq-prompt-guard-86m:
+    provider: groq
+    model_id: meta-llama/llama-prompt-guard-2-86m
+    price_in_per_m: 0.0            # not publicly priced; treated as free, flagged below
+    price_out_per_m: 0.0
+    supports: {tools: false, strict_json: false, reasoning: false, parallel_tools: false}
+    tier: guard
+    family: llama-guard
+    training_data_use: allowed
+    verified_on: 2026-07-26
+    notes: "Injection classifier, input gate and tool-result gate. Price not published; probe before billing claims."
+    sim: {source: spec, tok_per_s: 2000, ttft_s: 0.05, verbosity: 0.02}
+
+  # ---------------------------------------------------------------------------
+  # Anthropic  -  inference only. The AUP bars using inputs or outputs to train
+  # an AI model without prior authorization, with no competing-use qualifier.
+  # These models appear in the eval matrix and as escalation targets. Never in
+  # a .jsonl that touches a trainer.
+  # ---------------------------------------------------------------------------
+
+  claude-opus-5:
+    provider: anthropic
+    model_id: claude-opus-5
+    price_in_per_m: 5.00
+    price_out_per_m: 25.00
+    cache_read_discount: 0.90      # $0.50 read on a $5.00 input rate
+    batch_discount: 0.50
+    cache_ttl_s: 3600
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: frontier
+    family: anthropic
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    notes: "The frontier reference row and the escalation target."
+    sim:
+      source: spec
+      tau2: 0.944
+      tok_per_s: 58
+      ttft_s: 1.05
+      json_valid_rate: 0.999
+      tool_select_acc: 0.9857
+      param_acc: 0.988
+      injection_resist: 0.97
+      abstain_skill: 0.93
+      verbosity: 1.0
+
+  claude-sonnet-5:
+    provider: anthropic
+    model_id: claude-sonnet-5
+    price_in_per_m: 2.00           # rises to 3.00 on 2026-09-01
+    price_out_per_m: 10.00         # rises to 15.00 on 2026-09-01
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    cache_ttl_s: 3600
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: frontier
+    family: anthropic
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    notes: "PRICE RISES 50% ON 2026-09-01. The single-model baseline that beats the naive three-model split."
+    sim:
+      source: interpolated
+      tau2: 0.920
+      tok_per_s: 92
+      ttft_s: 0.90
+      json_valid_rate: 0.998
+      tool_select_acc: 0.9796
+      param_acc: 0.981
+      injection_resist: 0.95
+      abstain_skill: 0.89
+
+  claude-haiku-4-5:
+    provider: anthropic
+    model_id: claude-haiku-4-5-20251001
+    price_in_per_m: 1.00
+    price_out_per_m: 5.00
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    cache_ttl_s: 3600
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: mid
+    family: anthropic
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    notes: "Dated id pinned deliberately: undated aliases move under you."
+    sim:
+      source: interpolated
+      tau2: 0.860
+      tok_per_s: 180
+      ttft_s: 0.60
+      json_valid_rate: 0.996
+      tool_select_acc: 0.9629
+      param_acc: 0.965
+      injection_resist: 0.91
+      abstain_skill: 0.80
+
+  # ---------------------------------------------------------------------------
+  # OpenAI  -  inference only. ToS bars using Output to develop competing models.
+  # ---------------------------------------------------------------------------
+
+  gpt-56-sol:
+    provider: openai
+    model_id: gpt-5.6-sol
+    price_in_per_m: 2.50           # published as a 2.50-5.00 band; low end pinned
+    price_out_per_m: 15.00         # published as a 15.00-30.00 band
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: frontier
+    family: openai
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    notes: "Banded pricing. Ledger uses the low end, so cost claims are optimistic for this row and are marked as such."
+    sim:
+      source: interpolated
+      tau2: 0.940
+      tok_per_s: 110
+      ttft_s: 0.85
+      json_valid_rate: 0.999
+      tool_select_acc: 0.9845
+      param_acc: 0.986
+      injection_resist: 0.96
+      abstain_skill: 0.91
+
+  gpt-54-mini:
+    provider: openai
+    model_id: gpt-5.4-mini
+    price_in_per_m: 0.60
+    price_out_per_m: 2.40
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: mid
+    family: openai
+    training_data_use: forbidden
+    verified_on: null              # PRICE UNVERIFIED - probe before publishing
+    notes: >-
+      The spec's headline counterexample: beats gpt-oss-120b on cost-per-success
+      despite a higher token price, because 83.3% vs 65.8% tau-squared dominates.
+      Price is an estimate. Run `toolsmith probe models` before citing it.
+    sim:
+      source: spec
+      tau2: 0.833
+      tok_per_s: 210
+      ttft_s: 0.65
+      json_valid_rate: 0.997
+      tool_select_acc: 0.9556
+      param_acc: 0.958
+      injection_resist: 0.90
+      abstain_skill: 0.78
+
+  gpt-54-nano:
+    provider: openai
+    model_id: gpt-5.4-nano
+    price_in_per_m: 0.20
+    price_out_per_m: 1.25
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    supports: {tools: true, strict_json: true, reasoning: false, parallel_tools: true}
+    tier: cheap
+    family: openai
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    sim:
+      source: interpolated
+      tau2: 0.640
+      tok_per_s: 320
+      ttft_s: 0.45
+      json_valid_rate: 0.992
+      tool_select_acc: 0.894
+      param_acc: 0.901
+      injection_resist: 0.74
+      abstain_skill: 0.58
+
+  # ---------------------------------------------------------------------------
+  # Google  -  inference only, and judge-panel duty. ToS bars developing
+  # competing models from the Services.
+  # ---------------------------------------------------------------------------
+
+  gemini-31-pro:
+    provider: google
+    model_id: gemini-3.1-pro-preview
+    price_in_per_m: 2.00
+    price_out_per_m: 12.00
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: frontier
+    family: google
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    sim:
+      source: interpolated
+      tau2: 0.910
+      tok_per_s: 130
+      ttft_s: 0.95
+      json_valid_rate: 0.997
+      tool_select_acc: 0.9767
+      param_acc: 0.978
+      injection_resist: 0.94
+      abstain_skill: 0.87
+
+  gemini-20-flash:
+    provider: google
+    model_id: gemini-2.0-flash
+    price_in_per_m: 0.075
+    price_out_per_m: 0.30
+    cache_read_discount: 0.90
+    batch_discount: 0.50
+    supports: {tools: true, strict_json: true, reasoning: false, parallel_tools: true}
+    tier: cheap
+    family: google
+    training_data_use: forbidden
+    verified_on: 2026-07-26
+    notes: "Free-tier judge seat. Family-disjoint from every system under test."
+    sim:
+      source: interpolated
+      tau2: 0.700
+      tok_per_s: 260
+      ttft_s: 0.55
+      json_valid_rate: 0.993
+      tool_select_acc: 0.9147
+      param_acc: 0.921
+      injection_resist: 0.80
+      abstain_skill: 0.66
+
+  # ---------------------------------------------------------------------------
+  # Mistral  -  the only closed provider whose ToS grants output ownership
+  # outright ("Customer owns all Output"). The legal fallback teacher.
+  # ---------------------------------------------------------------------------
+
+  mistral-medium:
+    provider: mistral
+    model_id: mistral-medium-latest
+    price_in_per_m: 0.40
+    price_out_per_m: 2.00
+    cache_read_discount: 0.0
+    supports: {tools: true, strict_json: true, reasoning: false, parallel_tools: true}
+    tier: mid
+    family: mistral
+    training_data_use: allowed
+    verified_on: null              # PRICE AND ALIAS UNVERIFIED - probe before use
+    notes: "Third judge seat, and the only closed teacher whose outputs are training-legal."
+    sim:
+      source: interpolated
+      tau2: 0.760
+      tok_per_s: 150
+      ttft_s: 0.70
+      json_valid_rate: 0.994
+      tool_select_acc: 0.934
+      param_acc: 0.938
+      injection_resist: 0.85
+      abstain_skill: 0.72
+
+  # ---------------------------------------------------------------------------
+  # Local  -  the "runs on my laptop" row. One 4B model at 4-bit, ~2.5 GB.
+  # Total local footprint target is under 6 GB; nothing 8B or larger is ever
+  # downloaded to the machine.
+  # ---------------------------------------------------------------------------
+
+  local-mlx-qwen-4b:
+    provider: mlx
+    model_id: mlx-community/Qwen3.5-4B-Instruct-4bit
+    price_in_per_m: 0.0
+    price_out_per_m: 0.0
+    supports: {tools: true, strict_json: false, reasoning: true, parallel_tools: false}
+    tier: local
+    family: qwen
+    training_data_use: allowed     # Apache-2.0 weights, zero conditions
+    verified_on: 2026-07-26
+    notes: "Free at the margin, but not free in wall-clock. The honest floor of the frontier."
+    sim:
+      source: card
+      tau2: 0.520                  # card reports 79.9 unquantised; 4-bit and 4B in a long loop is not that
+      bfcl: 50.3
+      tok_per_s: 42
+      ttft_s: 0.35
+      json_valid_rate: 0.930
+      tool_select_acc: 0.845
+      param_acc: 0.851
+      injection_resist: 0.58
+      abstain_skill: 0.41
+      verbosity: 1.2
+
+  # ---------------------------------------------------------------------------
+  # Controls  -  not real models. Upper and lower bounds that make every other
+  # row legible.
+  # ---------------------------------------------------------------------------
+
+  oracle:
+    provider: simulated
+    model_id: oracle
+    price_in_per_m: 0.0
+    price_out_per_m: 0.0
+    supports: {tools: true, strict_json: true, reasoning: true, parallel_tools: true}
+    tier: local
+    family: control
+    training_data_use: allowed
+    verified_on: 2026-07-26
+    notes: "Perfect play. Replays the oracle program exactly. The ceiling row."
+    sim:
+      source: spec
+      tau2: 1.0
+      tok_per_s: 10000
+      ttft_s: 0.0
+      json_valid_rate: 1.0
+      tool_select_acc: 1.0
+      param_acc: 1.0
+      injection_resist: 1.0
+      abstain_skill: 1.0
+
+  coinflip:
+    provider: simulated
+    model_id: coinflip
+    price_in_per_m: 0.0
+    price_out_per_m: 0.0
+    supports: {tools: true, strict_json: true, reasoning: false, parallel_tools: false}
+    tier: local
+    family: control
+    training_data_use: allowed
+    verified_on: 2026-07-26
+    notes: "Picks a plausible tool at random. The floor row: any config that cannot beat this is noise."
+    sim:
+      source: spec
+      tau2: 0.05
+      tok_per_s: 10000
+      ttft_s: 0.0
+      json_valid_rate: 0.80
+      tool_select_acc: 0.18
+      param_acc: 0.30
+      injection_resist: 0.20
+      abstain_skill: 0.10

@@ -1,0 +1,76 @@
+name: Model drift watch
+
+# Model catalogues move fast. Five models were retired from one provider in four
+# months while this project was being specified, and two more were scheduled to
+# die three weeks after the spec was written.
+#
+# So the registry is watched rather than trusted. Weekly, this job checks every
+# declared model for staleness and, where a key is available, against the
+# provider's live catalogue. Drift opens an issue instead of quietly poisoning a
+# published price.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # 06:17 UTC every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    name: Probe catalogues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+
+      - name: Probe model catalogues
+        id: probe
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          uv run toolsmith probe models --write --strict 2>&1 | tee probe.log
+
+      - name: Open an issue on drift
+        if: steps.probe.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('probe.log', 'utf8').slice(0, 60000);
+            const title = 'Model registry drift detected';
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'drift',
+            });
+            const body = [
+              'The weekly probe found a discrepancy between `configs/models.yaml`',
+              'and the providers\' live catalogues, or a model that has gone stale.',
+              '',
+              'Nothing in this repository should hardcode a price or a model id from',
+              'a document. Re-run `uv run toolsmith probe models` locally, update the',
+              'registry, and bump `verified_on`.',
+              '',
+              '```', log, '```',
+            ].join('\n');
+            if (existing.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['drift'],
+              });
+            }

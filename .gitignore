@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---------------------------------------------------------------- toolsmith --
+.env
+.env.local
+build/
+docs/_site/
+docs/.quarto/
+configs/generated/
+*.duckdb
+*.sqlite3
+node_modules/
+.DS_Store

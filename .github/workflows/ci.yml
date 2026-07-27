@@ -1,0 +1,136 @@
+name: CI
+
+# The build fails on any claim this repository makes that stops being true.
+#
+#   quality      formatting, linting, typing
+#   test         the suite, on two OSes and two Python versions
+#   gates        the five governance gates (see `toolsmith ci all`)
+#   reproduce    the full pipeline end to end, from empty checkout to report
+#
+# Everything runs with no API keys. `--provider simulated` is the default, so
+# CI costs nothing and a fork can run the identical build.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_FROZEN: "1"
+  FORCE_COLOR: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, format, types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - name: Format check
+        run: uv run ruff format --check src tests
+      - name: Lint
+        run: uv run ruff check --output-format=github src tests
+      - name: Type check
+        run: uv run mypy
+
+  test:
+    name: Tests (${{ matrix.os }} / py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python }}
+      - run: uv sync --all-extras
+      - name: Run tests
+        run: uv run pytest --cov --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  gates:
+    name: Governance gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - name: Environment report
+        run: uv run toolsmith doctor
+      - name: License firewall
+        run: uv run toolsmith ci firewall
+      - name: Model agnosticism
+        run: uv run toolsmith ci model-agnostic
+      - name: Decontamination
+        run: uv run toolsmith ci decontam
+      - name: Hidden split integrity
+        run: uv run toolsmith ci hidden-split
+      - name: Budget cap
+        run: uv run toolsmith ci budget
+
+  reproduce:
+    name: Reproduce every published number
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+
+      - name: Build the worlds
+        run: uv run toolsmith world build --all
+
+      - name: Generate tasks and oracle programs
+        run: uv run toolsmith tasks build
+
+      - name: Verify the hidden split still matches its sealed hash
+        run: uv run toolsmith ci hidden-split
+
+      - name: Run the evaluation matrix
+        run: uv run toolsmith matrix run --provider simulated
+
+      - name: Regenerate every published artifact
+        run: uv run toolsmith report build
+
+      - name: Assert the committed artifacts are byte-identical
+        run: |
+          if ! git diff --quiet -- eval/ docs/data/; then
+            echo "::error::Committed artifacts drifted from a fresh run."
+            echo "Every number in the report must be regenerable. Run 'make all' and commit."
+            git --no-pager diff --stat -- eval/ docs/data/
+            exit 1
+          fi
+          echo "Committed artifacts match a fresh run exactly."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-artifacts
+          path: |
+            eval/results/
+            eval/costs.csv
+          if-no-files-found: ignore

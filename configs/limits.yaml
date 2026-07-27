@@ -1,0 +1,63 @@
+# Rate limits per provider.
+#
+# GENERATED FILE. Regenerate with `toolsmith probe limits --write`, which reads
+# the x-ratelimit-* response headers from a one-token request against each
+# provider you hold a key for. The values below are the documented free-tier
+# figures as of 2026-07-26 and carry source: documented until a probe overwrites
+# them with source: probed.
+#
+# The binding constraint on Groq's free tier is TPD, not RPM. At 200k tokens per
+# day and roughly 2.5k input tokens per agent turn, that is about 80 real agent
+# turns per day. Cached tokens do not count against it, which is why the stable
+# prefix ordering rule in the runtime is a throughput decision as much as a cost
+# decision.
+
+limits:
+  groq:
+    provider: groq
+    rpm: 30
+    rpd: 1000
+    tpm: 8000
+    tpd: 200000
+    probed_on: null
+    source: documented
+    notes: "Free tier. Cached tokens are not counted against these limits."
+
+  anthropic:
+    provider: anthropic
+    rpm: 50
+    tpm: 40000
+    probed_on: null
+    source: assumed
+    notes: "Tier 1. Probe before relying on these."
+
+  openai:
+    provider: openai
+    rpm: 500
+    tpm: 200000
+    probed_on: null
+    source: assumed
+
+  google:
+    provider: google
+    rpm: 15
+    rpd: 1500
+    probed_on: null
+    source: assumed
+    notes: "Free-tier limits are no longer published. Must be probed."
+
+  mistral:
+    provider: mistral
+    rpm: 60
+    probed_on: null
+    source: assumed
+
+  mlx:
+    provider: mlx
+    source: documented
+    notes: "Local. Bounded by unified memory, not by policy."
+
+  simulated:
+    provider: simulated
+    source: documented
+    notes: "No limits. Runs in-process."
