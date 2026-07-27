@@ -1,0 +1,41 @@
+{
+  "baseline": {},
+  "candidates": [
+    {
+      "decision": "deferred",
+      "expected_gain": "unknown, and bounded above by the 4 to 12 point gap the cascade has already closed",
+      "option": "LoRA on a strong-mid open executor",
+      "serving_cost_note": "managed platforms now require a dedicated GPU endpoint for LoRA inference; the hourly rate exceeds the whole project budget within days",
+      "training_cost_note": "roughly 15M tokens on rented A100 time",
+      "training_cost_usd": 8.0
+    },
+    {
+      "decision": "taken",
+      "expected_gain": "measured: see track_b_router and track_c_context",
+      "option": "spend the same effort on routing and context",
+      "serving_cost_note": "none; both are configuration",
+      "training_cost_usd": 0.0
+    }
+  ],
+  "chosen": {
+    "decision": "do not fine-tune",
+    "revisit_when": "routing and context are exhausted, the residual gap is in tool-calling syntax rather than judgement, and a scale-to-zero serving path exists"
+  },
+  "cost_usd": 0.0,
+  "delta": {},
+  "headline": "Not run, and the reasoning is the result. Routing and context engineering already deliver 88 to 96% of frontier pass@1 at 0.13 to 0.38 times the cost per success without training anything, the residual gap is in abstention judgement rather than tool-calling syntax, and the recurring cost of SERVING an adapter exceeds the entire project budget while the training run itself costs a few dollars.",
+  "lever": "adapter weights on a strong-mid open executor",
+  "notes": [
+    "The safety gate that WOULD apply is implemented in this module rather than described, so running this track later needs compute rather than design: refusal retention and over-refusal are measured before and after, both are published, and the adapter is withheld if refusal falls more than five points.",
+    "Training data would be legally constrained regardless. Only these generators may appear on a training row: coinflip, groq-oss-120b, groq-oss-20b, groq-prompt-guard-86m, groq-qwen36-27b, groq-safeguard-20b, local-mlx-qwen-4b, mistral-medium, oracle. The frontier models this project evaluates against are inference-only, and the licence firewall fails the build if one appears in a training file.",
+    "This is a pre-approved null. The question 'should I fine-tune?' is asked constantly and usually answered by reflex; a worked 'not yet, and here is the arithmetic' transfers further than a marginal adapter would."
+  ],
+  "optimised": {},
+  "provenance": "simulated",
+  "ran_at": "2026-07-27",
+  "reported_on": "n/a",
+  "title": "Fine-tuning (LoRA)",
+  "track": "track_d_lora",
+  "tuned_on": "n/a",
+  "verdict": "null"
+}

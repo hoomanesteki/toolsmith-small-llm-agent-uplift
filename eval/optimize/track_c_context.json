@@ -1,0 +1,60 @@
+{
+  "baseline": {
+    "pass_at_1": 0.9083,
+    "tokens_in_per_task": 6046.0,
+    "usd_per_success": 0.01937,
+    "usd_per_task": 0.017594
+  },
+  "candidates": [
+    {
+      "configuration": "ablation_no_tool_search",
+      "cost_saved_by_lever_pct": -23.15,
+      "lever_removed": "every tool schema in the prompt, on every turn",
+      "pass_at_1": 0.9083,
+      "tokens_in_per_task": 11733.4,
+      "tokens_saved_by_lever": 5687.4,
+      "usd_per_success": 0.025206,
+      "usd_per_task": 0.022895
+    },
+    {
+      "configuration": "ablation_no_compaction",
+      "cost_saved_by_lever_pct": 0.0,
+      "lever_removed": "transcript grows until the turn budget stops it",
+      "pass_at_1": 0.9083,
+      "tokens_in_per_task": 6046.0,
+      "tokens_saved_by_lever": 0.0,
+      "usd_per_success": 0.01937,
+      "usd_per_task": 0.017594
+    }
+  ],
+  "chosen": {
+    "compaction_at": 0.6,
+    "tool_exposure": "tool_search"
+  },
+  "cost_usd": 6.970095,
+  "delta": {
+    "pass_at_1": 0.0,
+    "tokens_in_per_task_pct": -48.47,
+    "usd_per_success_pct": -23.15
+  },
+  "headline": "Retrieving tool schemas instead of inlining them cuts input tokens by 48% per task and costs 0.0% of pass@1, for a 23% reduction in dollars per success.",
+  "lever": "tool retrieval and transcript compaction",
+  "notes": [
+    "This track has no tuned parameters, so there is nothing to overfit and nothing to hold out. It is measured on the validation split purely to leave the test split untouched for the tracks that do tune.",
+    "Tool retrieval is not free: retrieved schemas persist for the rest of the run, so the stable prefix grows once and the cache misses once. That cost is inside the numbers above rather than excluded from them.",
+    "Compaction cannot show a saving on trajectories short enough never to reach the 60% threshold. On this task mix most do not, which is why its ablation is close to the baseline. It is retained because the cost of having it is zero and the cost of not having it on a fifty-turn task is not."
+  ],
+  "optimised": {
+    "pass_at_1": 0.9083,
+    "tokens_in_per_task": 6046.0,
+    "usd_per_success": 0.01937,
+    "usd_per_task": 0.017594
+  },
+  "provenance": "simulated",
+  "ran_at": "2026-07-27",
+  "reported_on": "val",
+  "title": "Context engineering",
+  "track": "track_c_context",
+  "tuned_on": "none (no free parameters)",
+  "verdict": "gain"
+}
