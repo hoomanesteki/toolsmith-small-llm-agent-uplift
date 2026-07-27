@@ -850,6 +850,11 @@ serve = [
     { name = "uvicorn", extra = ["standard"] },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "datasketch", marker = "extra == 'decontam'", specifier = ">=1.6.5" },
@@ -869,6 +874,9 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'serve'", specifier = ">=0.32" },
 ]
 provides-extras = ["serve", "decontam", "dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "httpx", specifier = ">=0.28.1" }]
 
 [[package]]
 name = "typer"

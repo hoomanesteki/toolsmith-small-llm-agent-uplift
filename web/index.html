@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>ToolSmith</title>
+    <meta
+      name="description"
+      content="Which model should run which part of your agent? A control plane that routes planner, executor and reviewer across frontier and open models, verifies every step against executable ground truth, and publishes the cost-versus-quality frontier."
+    />
+    <link rel="stylesheet" href="/assets/css/tokens.css" />
+    <link rel="stylesheet" href="/assets/css/app.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a78d6'/%3E%3Cpath d='M8 21l5-10 3 6 2-3 6 7' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="brand">ToolSmith <small>control plane</small></div>
+      <nav id="tabs" class="tabs" role="tablist" aria-label="Screens"></nav>
+      <div class="nav-right">
+        <span id="provenance" class="chip">checking</span>
+        <button id="theme" class="btn ghost" aria-label="Switch between light and dark">Theme</button>
+      </div>
+    </header>
+    <main id="screen" class="screen" role="main"></main>
+    <script type="module" src="/assets/js/app.js"></script>
+    <noscript>
+      <div class="screen">
+        <h1>ToolSmith</h1>
+        <p>
+          This screen needs JavaScript. Every number it shows is also in
+          <code>eval/results/matrix.json</code> and in the published report, both of which are
+          plain files you can read without running anything.
+        </p>
+      </div>
+    </noscript>
+  </body>
+</html>
