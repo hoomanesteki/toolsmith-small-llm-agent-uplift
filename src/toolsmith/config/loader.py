@@ -90,6 +90,24 @@ def load_rubrics(directory: Path | None = None) -> dict[str, Rubric]:
     return rubrics
 
 
+def load_panels(directory: Path | None = None) -> dict[str, tuple[str, ...]]:
+    """Which models sit on each judging panel.
+
+    Alongside the rubrics because a panel and a rubric are two halves of one
+    decision: what is being asked, and who is being asked it. Both used to be
+    half in YAML and half in Python, which meant changing who grades every
+    published qualitative number was a source edit.
+    """
+    directory = directory or CONFIG_DIR / "rubrics"
+    panels: dict[str, tuple[str, ...]] = {}
+    if not directory.exists():
+        return panels
+    for path in sorted(directory.glob("*.yaml")):
+        for name, seats in (_read_yaml(path).get("panels") or {}).items():
+            panels[name] = tuple(seats)
+    return panels
+
+
 @functools.lru_cache(maxsize=4)
 def load_registry(config_dir: Path | None = None) -> Registry:
     """Load every config file into one validated object.
@@ -104,6 +122,7 @@ def load_registry(config_dir: Path | None = None) -> Registry:
         limits=load_limits(directory / "limits.yaml"),
         budget=load_budget(directory / "budget.yaml"),
         rubrics=load_rubrics(directory / "rubrics"),
+        panels=load_panels(directory / "rubrics"),
     )
 
 

@@ -43,15 +43,12 @@ N times.
 Measured on tasks grouped by gold-program length, holding the configuration
 fixed:
 
-| Gold program | Cheap executor | Frontier executor |
-|---|---:|---:|
-| 1 step | 0.750 | ~1.00 |
-| 2 steps | 0.537 | ~0.99 |
+{{< include _generated/compounding.md >}}
 
-The cheap executor's two-step rate is within a hundredth of *q²* computed from
-its own published per-step priors. The frontier executor barely moves. This is
-the whole argument against putting the cheapest model in the loop, and it is
-also why the planner is cheap to upgrade: one call, no exponent.
+The cheap executor loses 15 points going from one step to two. The frontier
+executor loses 4. That gap is the whole argument against putting the cheapest
+model in the loop, and it is also why the planner is cheap to upgrade: it runs
+once, so there is no exponent on it.
 
 ::: {.callout-provenance}
 **What this does and does not show.** The compounding is a property of the
@@ -64,8 +61,11 @@ the absolute rates do.
 ## 3. Escalation buys quality, and whether it pays depends on your objective
 
 Removing escalation from the cascade and changing nothing else costs **18.3
-points of pass@1** at the same token cost. That is the value of a second
-independent attempt.
+points of pass@1**. The retries are not free: they add 26% to the bill per task.
+What makes the trade so clean is where those two numbers land. Cost per success
+is $0.01973 either way, to the fifth decimal. The extra spend and the extra
+successes cancel, and you are left choosing between 0.883 and 0.700 at the same
+price per thing that worked.
 
 Whether it *pays* is a different question, and Track B answers it honestly by
 sweeping the threshold on validation and reporting on test:
@@ -87,8 +87,12 @@ That flatness is a finding about the signal, not a gap in the grid.
 ## 4. Cross-model review is not free, and neither is self-review
 
 The matrix includes a configuration whose reviewer shares the executor's family,
-identical in every other respect. Self-review costs pass@1 and raises the
-escalation rate, because a model catches fewer of its own errors. The literature
+identical in every other respect. Self-review costs 5 points of pass@1, and the
+mechanism shows up in a number that looks like good news: the escalation rate
+*falls*, from 23.9% to 18.9%. A reviewer from the same family agrees with the
+executor more often, so fewer runs get a second attempt, so more bad
+trajectories ship. A guardrail that fires less is not a guardrail working
+better. The literature
 puts the effect at roughly a quarter of a model's error-catching ability
 (GPT-4 on GSM8K falling 95.5 to 91.5 to 89.0 across self-correction rounds,
 arXiv 2310.01798); this harness applies that penalty and then measures what it
@@ -111,9 +115,10 @@ publishing only the one that worked.
 The simulator samples behaviour from capability priors and never reads the
 prompt, so any accuracy difference reported under it would be an artifact of the
 harness. What is real is the token cost: five candidates spanning 81 to 237
-tokens per turn, a 101% spread paid on every turn of every task. A prompt that
-buys two points of accuracy at 60% more prefix may still lose on dollars per
-success, and that is what a live run would settle.
+tokens per turn, so the dearest prompt costs 2.9x the cheapest, paid on every
+turn of every task. A prompt that buys two points of accuracy at three times the
+prefix may still lose on dollars per success, and that is what a live run would
+settle.
 
 **Track D was not run, and the reasoning is the result.** Routing and context
 already deliver 88 to 96% of frontier pass@1 at 0.13 to 0.38 times the cost per

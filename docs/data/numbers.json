@@ -52,10 +52,9 @@
     "usd_per_task": 0.0007007804444444445
   },
   "cheapest_vs_reference": 0.02148494188202671,
-  "comparisons_significant": 70,
-  "comparisons_total": 105,
+  "comparisons_significant": 64,
+  "comparisons_total": 91,
   "escalation_gain": 0.18333300000000008,
-  "generated_on": "2026-07-27",
   "hidden_split": "d2f4c2ed77bd584ac19a99f34c5c95b81428349290ef5401d2ef482ad67bfe34",
   "injections": 375,
   "input_share": 0.8234596666666667,
@@ -118,7 +117,7 @@
   "suite_total": 7756,
   "tracks": {
     "track_a_prompts": {
-      "headline": "Prompt compilation cannot be scored under the simulator: it samples behaviour from published model priors and never reads the prompt. What is measurable is the token cost, which ranges 81 to 237 tokens per turn, a 54% spread paid on every turn of every task.",
+      "headline": "Prompt compilation cannot be scored under the simulator: it samples behaviour from published model priors and never reads the prompt. What is measurable is the token cost, which ranges 81 to 237 tokens per turn. The dearest prompt costs 2.9x the cheapest, on every turn of every task.",
       "verdict": "unmeasurable"
     },
     "track_b_router": {

@@ -119,9 +119,10 @@ Finding 2
 ### The executor is the only role whose errors compound, so it is the wrong place to economise
 
 A model with per-step reliability *q* completes an N-step trajectory cleanly at
-roughly *q^N*. The planner and the reviewer are single shots. Measured here: a
-cheap executor passes 75% of one-step tasks and 54% of two-step ones, tracking
-*q²* almost exactly, while a frontier executor barely moves.
+roughly *q^N*. The planner and the reviewer are single shots. Measured here: the
+all-cheap row passes 71.4% of one-step tasks and 56.5% of two-step ones, which
+is what *q²* predicts from its own per-step prior. The all-frontier row gives up
+under four points across the same step.
 
 This inverts the usual intuition. The planner is cheap to upgrade **because it
 runs once**, not because its input is cheap.
@@ -134,9 +135,10 @@ Finding 3
 ### Escalation is a second independent attempt, and it is worth 18 points
 
 Removing escalation from the cascade, changing nothing else, costs **18.3
-points of pass@1** at identical token cost. Two attempts beat one even when the
-first is weaker, which is why a cascade can approach and sometimes exceed the
-success rate of running the frontier model everywhere.
+points of pass@1**. The retries add 26% to the bill, and buy back exactly enough
+successes to leave cost per success unchanged at $0.01973. Two attempts beat one
+even when the first is weaker, which is why a cascade can approach and sometimes
+exceed the success rate of running the frontier model everywhere.
 
 The variable that governs it is not the executor's accuracy but the verifier's
 **detection rate**: escalation only fires on what the verifier noticed.

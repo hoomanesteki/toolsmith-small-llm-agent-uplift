@@ -3,7 +3,8 @@
 Every model, price, capability and role assignment in ToolSmith is declared in
 YAML and validated here. Nothing about a model is allowed to live in Python
 source: swapping ``gpt-oss-20b`` for ``claude-opus-5`` must be a YAML edit, and
-``tests/test_model_agnostic.py`` proves it.
+``test_no_model_id_is_hardcoded_in_source`` in ``tests/test_governance.py``
+proves it.
 """
 
 from __future__ import annotations
@@ -240,6 +241,7 @@ class Registry(BaseModel):
     limits: dict[str, RateLimit] = Field(default_factory=dict)
     budget: BudgetPolicy = Field(default_factory=BudgetPolicy)
     rubrics: dict[str, Rubric] = Field(default_factory=dict)
+    panels: dict[str, tuple[str, ...]] = Field(default_factory=dict)
 
     def model(self, key: str) -> ModelSpec:
         try:

@@ -4,8 +4,9 @@
 #
 # Every model the system can reach is declared here and nowhere else. Swapping
 # an executor from `groq-oss-20b` to `claude-opus-5` is an edit to a pipeline
-# YAML, never a code change. `tests/test_model_agnostic.py` proves it by
-# asserting that no model identifier appears in any .py file under src/.
+# YAML, never a code change. `test_no_model_id_is_hardcoded_in_source` in
+# `tests/test_governance.py` proves it, by asserting that no model identifier
+# appears in any .py file under src/.
 #
 # FIELD NOTES
 #   verified_on          Date the price and model id were checked against the

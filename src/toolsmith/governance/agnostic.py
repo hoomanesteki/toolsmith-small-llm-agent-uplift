@@ -55,7 +55,18 @@ def scan_source(
     registry = registry or load_registry()
     source_root = (root or REPO_ROOT) / "src" / "toolsmith"
 
-    ids = {spec.model_id for spec in registry.models.values() if spec.model_id not in EXEMPT_IDS}
+    # Both the vendor identifier and the repository's own key for it. The gate
+    # checked only the former for a while, and missed a judge panel written as
+    # `("groq-oss-120b", "gemini-20-flash", "mistral-medium")` in
+    # `harness/judges.py`, because the vendor string for the first of those is
+    # `openai/gpt-oss-120b`. Zero offenders, three models named in executable
+    # code, and swapping the panel that grades every published qualitative
+    # number was a Python edit while the README said it was a YAML edit.
+    #
+    # A key is as much a portability leak as a vendor id. It is the name of a
+    # row in `models.yaml`, and code that spells it has picked a model.
+    ids = {spec.model_id for spec in registry.models.values()} | set(registry.models)
+    ids -= EXEMPT_IDS
 
     violations: list[Hardcode] = []
     files = sorted(source_root.rglob("*.py"))

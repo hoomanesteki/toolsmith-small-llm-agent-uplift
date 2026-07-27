@@ -158,7 +158,14 @@ PROSE_CLAIMS = {
         ("best vs reference", lambda n: f"{n['best_vs_reference']:.2f}x"),
         ("input share", lambda n: f"{n['input_share'] * 100:.0f}%"),
     ],
-    "results.qmd": [],
+    # An empty list here used to make this page's parametrised case pass while
+    # asserting nothing, which is the shape of test that survives the change it
+    # was written to catch. The comparison count is the number most likely to
+    # move on this page: it changes whenever a configuration is added, removed
+    # or found to be a duplicate of another.
+    "results.qmd": [
+        ("comparison count", lambda n: str(n["comparisons_total"])),
+    ],
     "findings.qmd": [
         ("input share", lambda n: f"{n['input_share'] * 100:.0f}%"),
         ("escalation gain", lambda n: f"{n['escalation_gain'] * 100:.1f}"),

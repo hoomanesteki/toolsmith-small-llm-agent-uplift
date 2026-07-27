@@ -213,6 +213,24 @@ def test_calibration_says_when_it_is_uncalibrated():
         assert payload["note"]
 
 
+def test_calibration_can_find_the_text_a_labeller_read():
+    """The endpoint used to pass an empty answers map and discard every label.
+
+    `calibrate_behaviour` re-runs the classifier on the response text, looked up
+    by (task_id, pipeline). With nothing in that map every label was skipped for
+    want of text, so the screen reported UNCALIBRATED however much work a person
+    put in, and the test above passed the whole time because "uncalibrated" was
+    a legitimate answer. This asserts the lookup is populated, which is the part
+    that was silently empty.
+    """
+    from app.main import _answers_by_run
+
+    answers = _answers_by_run()
+    assert answers, "no answer text recovered from the committed traces"
+    task_id, pipeline = next(iter(answers))
+    assert answers[(task_id, pipeline)].strip(), "an answer was recovered but it is blank"
+
+
 # ==================================================================== shell ==
 
 

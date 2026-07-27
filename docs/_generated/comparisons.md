@@ -6,7 +6,6 @@
 | cascade_frontier_verify | random_floor | +0.883 | [+0.833, +0.928] | 159 | 0.00e+00 |
 | ablation_no_compaction | random_floor | +0.850 | [+0.794, +0.900] | 155 | 0.00e+00 |
 | ablation_no_tool_search | random_floor | +0.850 | [+0.794, +0.900] | 155 | 0.00e+00 |
-| cascade_default | random_floor | +0.850 | [+0.794, +0.900] | 155 | 0.00e+00 |
 | random_floor | single_sonnet | -0.850 | [-0.900, -0.794] | 153 | 0.00e+00 |
 | ablation_self_review | random_floor | +0.800 | [+0.733, +0.861] | 148 | 0.00e+00 |
 | cascade_all_open | random_floor | +0.794 | [+0.733, +0.856] | 145 | 0.00e+00 |
@@ -19,4 +18,5 @@
 | cascade_frontier_verify | local_only | +0.478 | [+0.394, +0.561] | 102 | 0.00e+00 |
 | ablation_no_compaction | local_only | +0.444 | [+0.361, +0.528] | 98 | 0.00e+00 |
 | ablation_no_tool_search | local_only | +0.444 | [+0.361, +0.528] | 98 | 0.00e+00 |
-| cascade_default | local_only | +0.444 | [+0.361, +0.528] | 98 | 0.00e+00 |
+| local_only | single_sonnet | -0.444 | [-0.528, -0.361] | 96 | 0.00e+00 |
+| local_only | random_floor | +0.406 | [+0.328, +0.483] | 79 | 0.00e+00 |

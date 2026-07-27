@@ -59,11 +59,20 @@ this harness can record, and it is a separate column for that reason.
 
 ## Which differences are real
 
-Fifteen configurations is 105 pairwise comparisons. At alpha 0.05 you would
-expect about five spurious wins from noise alone, so every comparison is
-Holm-Bonferroni corrected across the whole family. McNemar's exact test is used
-rather than a chi-square approximation, because only the discordant pairs carry
-information and there are often few of them.
+Fifteen configurations would be 105 pairwise comparisons. The family is 91,
+because one row is not a configuration: `ablation_no_compaction` turns off a
+mechanism that never engages on this workload, where trajectories peak around
+twelve thousand tokens and the compaction threshold sits far above that. It
+reproduces its baseline task for task and dollar for dollar. Left in the family
+it would have contributed fourteen pairs, each of them the same configuration
+compared against itself under two names, and every one of those free
+non-significant results makes the survivors look more selective than they are by
+enlarging the number Holm divides by.
+
+At alpha 0.05 across 91 comparisons you would expect four or five spurious wins
+from noise alone, so the whole family is Holm-Bonferroni corrected. McNemar's
+exact test is used rather than a chi-square approximation, because only the
+discordant pairs carry information and there are often few of them.
 
 The twenty largest differences that survive correction:
 

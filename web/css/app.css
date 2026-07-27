@@ -283,6 +283,19 @@ textarea {
   padding: 0.4rem 0.7rem;
   transition: border-color var(--fast) var(--spring), box-shadow var(--fast) var(--spring);
 }
+
+/* appearance:none strips the disclosure arrow along with the native chrome, and
+   nothing was putting one back. A select that looks exactly like a text input
+   reads as a text input, and the Lab's configuration picker is the first
+   control most people meet. The chevron is drawn inline so it costs no request
+   and inherits currentColor, which keeps it correct in both themes. */
+select {
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  cursor: pointer;
+}
 select:hover,
 input[type="text"]:hover {
   border-color: var(--hairline-strong);
@@ -584,6 +597,15 @@ figure.chart figcaption {
 }
 .banner strong {
   color: var(--ink);
+}
+/* A banner reporting a broken run should not look like a footnote about
+   provenance. Same shape, different edge. */
+.banner.bad {
+  border-left-color: var(--critical, var(--serious));
+}
+.status.bad,
+#status.bad {
+  color: var(--critical, var(--serious));
 }
 
 .empty {

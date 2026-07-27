@@ -16,7 +16,6 @@ Every track tunes on **val** and reports on **test**. Never the other way round.
 
 from __future__ import annotations
 
-import datetime as dt
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -50,7 +49,6 @@ class TrackResult:
     cost_usd: float = 0.0
     notes: list[str] = field(default_factory=list)
     provenance: str = "simulated"
-    ran_at: str = field(default_factory=lambda: dt.datetime.now(dt.UTC).strftime("%Y-%m-%d"))
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

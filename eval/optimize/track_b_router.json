@@ -165,7 +165,6 @@
     "usd_per_success": 0.018313
   },
   "provenance": "simulated",
-  "ran_at": "2026-07-27",
   "reported_on": "test",
   "title": "Routing and escalation",
   "track": "track_b_router",

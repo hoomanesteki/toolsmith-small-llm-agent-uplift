@@ -161,14 +161,20 @@ def run(
     cheapest_name = min(per_turn, key=lambda k: per_turn[k])
     cheapest = per_turn[cheapest_name]
     dearest = max(per_turn.values())
+    # Cheapest to dearest, as a multiple. The headline used to quote only the
+    # dearest candidate's distance above base (54%) while calling it a spread,
+    # and the prose on the findings page quoted the full range against base
+    # (101%). Two numbers for one fact, on the same screen. A ratio needs no
+    # reference point, so there is nothing left to disagree about.
+    ratio = dearest / cheapest if cheapest else 0.0
 
     if provider_mode == "simulated":
         verdict = "unmeasurable"
         headline = (
             "Prompt compilation cannot be scored under the simulator: it samples behaviour "
             "from published model priors and never reads the prompt. What is measurable is "
-            f"the token cost, which ranges {cheapest:.0f} to {dearest:.0f} tokens per "
-            f"turn, a {max(vs_base.values()):.0f}% spread paid on every turn of every task."
+            f"the token cost, which ranges {cheapest:.0f} to {dearest:.0f} tokens per turn. "
+            f"The dearest prompt costs {ratio:.1f}x the cheapest, on every turn of every task."
         )
         chosen = {
             "variant": "base",
@@ -205,6 +211,7 @@ def run(
         delta={
             "cheapest_candidate_tokens_per_turn": cheapest,
             "dearest_candidate_tokens_per_turn": dearest,
+            "dearest_over_cheapest": round(ratio, 3),
             "spread_pct": round(max(vs_base.values()) - min(vs_base.values()), 2),
         },
         candidates=candidates,

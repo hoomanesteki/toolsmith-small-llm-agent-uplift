@@ -43,12 +43,13 @@ from toolsmith.runtime.prompts import get_bundle
 from toolsmith.runtime.record import RunRecord
 from toolsmith.tasks.models import Task
 
-#: Default seats. Three families, none of which is a system under test in the
-#: default matrix. The runner drops any that collide and records the drop.
-DEFAULT_PANEL: tuple[str, ...] = ("groq-oss-120b", "gemini-20-flash", "mistral-medium")
-
-#: The cheap-judge ablation seat.
-CHEAP_PANEL: tuple[str, ...] = ("groq-oss-20b",)
+#: Seats come from `panels:` in `configs/rubrics/`. They used to be two tuples
+#: of model ids right here, which made changing who grades every published
+#: qualitative number a source edit. The agnosticism gate did not catch it: it
+#: scans for vendor identifiers like `openai/gpt-oss-120b` and these were
+#: registry keys like `groq-oss-120b`, a different string for the same model.
+#: The gate now checks both.
+FALLBACK_PANEL: tuple[str, ...] = ()
 
 
 @dataclass(slots=True)
@@ -175,7 +176,7 @@ class JudgePanel:
         factory: ProviderFactory,
         ledger: CostLedger,
         rubric: Rubric,
-        seats: tuple[str, ...] = DEFAULT_PANEL,
+        seats: tuple[str, ...] = FALLBACK_PANEL,
         cache: JudgeCache | None = None,
     ) -> None:
         self.registry = registry
