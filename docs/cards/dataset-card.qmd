@@ -16,7 +16,7 @@ sandbox, never written by hand and never judged by a model.
 1. Three worlds are built from a seeded RNG over literal word lists committed to
    this repository. No `faker`, no network, no wall clock. Build twice and the
    SHA-256 over every row is identical.
-2. Task templates are written in a shared twelve-**verb** grammar and phrase
+2. Task templates are written in a shared thirteen-**verb** grammar and phrase
    their questions with each world's own lexicon, so one template produces a
    sensible retail question, a sensible clinical question and a sensible
    documentation question.

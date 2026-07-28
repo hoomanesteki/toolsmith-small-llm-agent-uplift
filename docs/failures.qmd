@@ -17,7 +17,10 @@ The shape matters more than any single row, and the two orderings on this page
 disagree on purpose. By count, almost everything is ordinary wrongness: a bad
 answer, the wrong tool, bad arguments. Those are prompt and schema work. The
 failures that would actually hurt in production sit at the bottom of this chart
-and the top of the gallery below, and there are 13 of them across 8,100 runs.
+and the top of the gallery below, and there are 13 of them across the 2,700
+first-attempt runs. That is the slice everything else on the site is computed
+on too: pass@1, the safety rates and the tier breakdowns all read trial 0, so
+the counts here divide by the same denominator rather than by all 8,100.
 Rare is not the same as absent, which is why they are ranked by severity a
 second time rather than left to disappear into a long tail.
 

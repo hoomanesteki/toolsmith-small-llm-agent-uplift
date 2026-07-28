@@ -126,7 +126,7 @@ the process.
 | Job | What it does |
 |---|---|
 | `quality` | ruff format, ruff lint, mypy |
-| `test` | 351 tests on two operating systems and two Python versions |
+| `test` | 356 tests on two operating systems and two Python versions |
 | `gates` | the five governance gates above |
 | `reproduce` | the whole pipeline end to end, then asserts the committed artifacts are byte-identical to a fresh run |
 | `drift` | weekly, checks every declared model against the provider's live catalogue and opens an issue on drift |

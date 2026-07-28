@@ -9,7 +9,7 @@ honestly.
 
 But that only works if "same grammar, different nouns" is real rather than
 aspirational. So the grammar is the primary abstraction. A world does not
-declare twelve arbitrary tools; it binds twelve canonical :class:`Verb` slots to
+declare arbitrary tools; it binds canonical :class:`Verb` slots to
 its own nouns. ``SEARCH_PRINCIPALS`` is ``search_customers`` in operations and
 ``search_patients`` in the clinic. An oracle program is written in verbs, so the
 same task template generates correctly for any world, including one added

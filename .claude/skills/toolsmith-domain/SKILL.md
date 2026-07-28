@@ -22,7 +22,9 @@ worlds/<key>/
 
 ## The three contracts
 
-**Verbs.** Bind the twelve canonical verbs in `worlds/base.Verb` to your nouns.
+**Verbs.** Bind the canonical verbs in `worlds/base.Verb` to your nouns. There
+are thirteen; the seven in `REQUIRED_VERBS` are mandatory and the rest are for
+domains that have them, so a world binds between seven and thirteen tools.
 `SEARCH_PRINCIPALS` is `search_customers` in retail and `search_patients` in a
 clinic. Seven are required; the rest are optional and the task generator only
 emits programs using verbs you bind. Exactly one tool must be `privileged`, and

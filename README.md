@@ -7,7 +7,7 @@ the cost-versus-quality frontier with confidence intervals and the losing
 transcripts attached.
 
 [**Read the report**](https://hoomanesteki.github.io/toolsmith-small-llm-agent-uplift/)
-· 351 tests · 5 governance gates · $0.00 of a $20 cap spent
+· 356 tests · 5 governance gates · $0.00 of a $20 cap spent
 
 ---
 
@@ -74,7 +74,7 @@ configs/          every model, price and role assignment. The whole point.
 src/toolsmith/
   config/         typed registry; a bad config fails at load, not mid-run
   providers/      vendor adapters plus the deterministic simulator
-  worlds/         three sandboxed domains behind one twelve-verb grammar
+  worlds/         three sandboxed domains behind one thirteen-verb grammar
   tasks/          generation, oracle programs, splits, decontamination
   runtime/        gate -> plan -> execute -> review -> gate
   harness/        runner, judges, statistics, the matrix
@@ -115,7 +115,8 @@ breach the cap before the request goes out.
 
 ## Adding a domain
 
-A fourth world is a folder: a schema, a seeded builder, twelve verb bindings, a
+A fourth world is a folder: a schema, a seeded builder, a binding for every
+verb the domain has and at least the seven that are mandatory, a
 lexicon, and nine row samplers. Nothing in the runtime, harness, report or UI
 changes, and the conformance suite runs against it the moment it is registered.
 
