@@ -44,9 +44,20 @@ demo:  ## Verify the zero-key demo works and print what to look at
 	$(RUN) toolsmith demo --run
 
 # ------------------------------------------------------------------- gates --
+# The suite is derived from a seed rather than committed, so a fresh clone does
+# not have it and two of the gates correctly refuse to pass without it. CI
+# generates it before running them; so does this, or `make check` would fail on
+# a clean checkout for a reason that is not a failure. Regenerating is a no-op
+# when the file is already there.
 .PHONY: gates
-gates:  ## All five CI policy gates, in one command, exactly as CI runs them
+gates: data  ## All five CI policy gates, in one command, exactly as CI runs them
 	$(RUN) toolsmith ci all
+
+.PHONY: data
+data: data/tasks/tasks.jsonl  ## Generate the task suite if this checkout lacks it
+
+data/tasks/tasks.jsonl:
+	$(RUN) toolsmith tasks build
 
 .PHONY: firewall
 firewall:  ## License firewall: no forbidden model may appear in training data
