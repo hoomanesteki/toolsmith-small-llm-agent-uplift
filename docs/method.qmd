@@ -21,8 +21,10 @@ turn that attack into a generalisation result.
 | `clinic` | transfer | The same programs against a schema never trained on |
 | `doc` | grounding | Retrieval, citation and faithfulness, all checkable |
 
-The grammar is the primary abstraction. A world does not declare twelve
-arbitrary tools; it binds twelve canonical **verbs** to its own nouns.
+The grammar is the primary abstraction. A world does not declare arbitrary
+tools; it binds canonical **verbs** to its own nouns. Thirteen exist; seven are
+mandatory and the rest are bound only by the domains that have them, which is
+why `ops` and `clinic` expose eleven tools and `doc` exposes thirteen.
 `SEARCH_PRINCIPALS` is `search_customers` in operations and `search_patients` in
 the clinic. An oracle program is written in verbs, so one task template
 generates correct, ground-truthed tasks for every world that binds the verbs it

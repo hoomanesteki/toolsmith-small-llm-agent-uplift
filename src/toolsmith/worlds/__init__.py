@@ -1,6 +1,6 @@
 """Sandboxed domains with ground truth by construction.
 
-Three worlds ship in the box. They share one twelve-verb grammar and disagree
+Three worlds ship in the box. They share one thirteen-verb grammar and disagree
 about everything else, which is what turns "it works on my toy world" into a
 measured generalisation result.
 

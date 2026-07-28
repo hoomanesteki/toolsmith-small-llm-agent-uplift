@@ -107,7 +107,7 @@ buy. The executor re-reads its whole transcript every turn, so input grows with
 the square of the turn count while output grows linearly.
 
 The lever is therefore context, not generation. Retrieving tool schemas through
-a `search_tools` meta-tool instead of inlining all twelve cuts input by **48%
+a `search_tools` meta-tool instead of inlining every tool the world binds cuts input by **48%
 per task** at no measurable cost in accuracy, which is a 23% reduction in
 dollars per success for an afternoon of engineering and no tokens.
 :::

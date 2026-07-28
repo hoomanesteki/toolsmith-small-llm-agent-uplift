@@ -14,6 +14,7 @@ from dataclasses import replace
 
 import pytest
 
+from toolsmith.config import REPO_ROOT
 from toolsmith.worlds import (
     BASE_DATE,
     Injection,
@@ -615,3 +616,40 @@ def test_argument_validator_reports_the_first_problem_it_finds():
     assert validate_arguments(TODAY_TOOL, {"offset_days": 0}) is None
     assert "must be an integer" in (validate_arguments(TODAY_TOOL, {"offset_days": "x"}) or "")
     assert "unknown argument" in (validate_arguments(TODAY_TOOL, {"nope": 1}) or "")
+
+
+def test_the_grammar_is_the_size_the_documentation_claims():
+    """A headline number that nine files repeat should not be typed nine times.
+
+    The `Verb` enum grew to thirteen members and the README, the method page,
+    the dataset card, the domain skill and the enum's own docstring all went on
+    saying twelve. It is the first number a reader uses to size the abstraction,
+    and the only one they can check by counting.
+
+    Worth being precise about what varies. Thirteen verbs exist; seven are
+    mandatory; a world binds the ones its domain has, which is why two of the
+    three ship eleven tools and the third ships thirteen. Any sentence naming a
+    single per-world count is wrong for at least one world.
+    """
+    assert len(list(Verb)) == 13
+    assert len(REQUIRED_VERBS) == 7
+    for key, spec in all_worlds().items():
+        assert 7 <= len(spec.tools) <= 13, f"{key} binds {len(spec.tools)} tools"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        REPO_ROOT / "README.md",
+        REPO_ROOT / "docs" / "method.qmd",
+        REPO_ROOT / "docs" / "cards" / "dataset-card.qmd",
+        REPO_ROOT / ".claude" / "skills" / "toolsmith-domain" / "SKILL.md",
+    ],
+    ids=lambda p: p.name,
+)
+def test_no_page_states_a_grammar_size_the_enum_disagrees_with(path):
+    words = {12: "twelve", 13: "thirteen"}
+    right, wrong = words[len(list(Verb))], words[len(list(Verb)) - 1]
+    text = path.read_text(encoding="utf-8")
+    for phrase in (f"{wrong}-verb", f"{wrong} canonical", f"{wrong} verb bindings"):
+        assert phrase not in text, f"{path.name} says {phrase!r}; the enum has {right} members"

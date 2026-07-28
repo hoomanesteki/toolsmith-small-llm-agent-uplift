@@ -2,8 +2,8 @@
 
 THE ARITHMETIC
 --------------
-A twelve-tool world costs roughly 1,400 tokens of schema. Put them all in the
-system prompt and every turn of a six-turn loop pays for all twelve, whether it
+An eleven-tool world costs roughly 1,400 tokens of schema. Put them all in the
+system prompt and every turn of a six-turn loop pays for all of them, whether it
 uses one or none. Input is already about three quarters of an agent's token
 bill, and the executor is the only role that runs N times, so this is the single
 largest line item in the whole system.
@@ -24,7 +24,7 @@ THE RANKING
 Lexical, transparent, and offline. Field-weighted term overlap with an IDF
 factor, so a query term that appears in one tool's description outranks one that
 appears in all of them. Embeddings would rank better and would make the result
-depend on a downloaded model and a machine; for twelve tools the ceiling is not
+depend on a downloaded model and a machine; at this catalogue size the ceiling is not
 where the difficulty lies.
 """
 

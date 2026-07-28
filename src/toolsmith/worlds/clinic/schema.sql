@@ -1,6 +1,6 @@
 -- clinicworld: outpatient scheduling and billing for a four-site practice.
 --
--- Same twelve-verb grammar as opsworld. Different nouns, different columns,
+-- Same verb grammar as opsworld. Different nouns, different columns,
 -- different rules, and a policy table whose shape deliberately does not match
 -- opsworld's: coverage is keyed by plan AND service band, not by a single tier.
 --
