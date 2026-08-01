@@ -71,7 +71,7 @@ jobs:
       # restore write over sample.jsonl and the sealed hash, which are committed
       # and are the two files the governance gates exist to check.
       - name: Cache the generated task suite
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: data/tasks/tasks.jsonl
           key: suite-${{ runner.os }}-py${{ matrix.python }}-${{ hashFiles('src/toolsmith/tasks/**/*.py', 'src/toolsmith/worlds/**/*.py', 'tests/conftest.py') }}
