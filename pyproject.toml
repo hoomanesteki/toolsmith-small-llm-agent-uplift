@@ -37,7 +37,7 @@ decontam = [
 dev = [
   "pytest>=8.3",
   "pytest-cov>=6.0",
-  "ruff>=0.8",
+  "ruff>=0.16.1",
   "mypy>=1.13",
   "types-PyYAML>=6.0",
 ]
